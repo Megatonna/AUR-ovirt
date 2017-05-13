@@ -1,0 +1,50 @@
+# This is a default template for a post-install scriptlet.
+# Uncomment only required functions and remove any functions
+# you don't need (and this header).
+_snlk_user='sanlock'
+_snlk_group='sanlock'
+
+## arg 1:  the new package version
+pre_install() {
+  /usr/bin/getent group "$_snlk_group" > /dev/null || /usr/sbin/groupadd \
+	  -g 179 "$_snlk_group"
+  /usr/bin/getent passwd "$_snlk_user" > /dev/null || /usr/sbin/useradd \
+	  -u 179 -c "$_snlk_user" -s /sbin/nologin -r \
+	  -g 179 -d /run/sanlock "$_snlk_user"
+  /usr/sbin/usermod -a -G disk "$_snlk_user"
+}
+
+## arg 1:  the new package version
+post_install() {
+  /bin/ldconfig
+  /bin/systemctl preset wdmd.service > /dev/null 2>&1 || :
+  /bin/systemctl preset sanlock.service > /dev/null 2>&1 || :
+  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+}
+
+## arg 1:  the new package version
+## arg 2:  the old package version
+pre_upgrade() {
+echo "None"
+}
+
+## arg 1:  the new package version
+## arg 2:  the old package version
+post_upgrade() {
+echo "None"
+}
+
+## arg 1:  the old package version
+pre_remove() {
+  /bin/systemctl --no-reload disable wdmd.service > /dev/null 2>&1 || :
+  /bin/systemctl stop wdmd.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable sanlock.service > /dev/null 2>&1 || :
+  /bin/systemctl stop sanlock.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable fence_sanlockd.service > /dev/null 2>&1 || :
+}
+
+## arg 1:  the old package version
+post_remove() {
+  /bin/systemctl try-restart fence_sanlockd.service > /dev/null 2>&1 || :
+  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+}
