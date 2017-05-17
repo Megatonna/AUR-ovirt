@@ -1,0 +1,24 @@
+# This is a default template for a post-install scriptlet.
+# Uncomment only required functions and remove any functions
+# you don't need (and this header).
+
+## arg 1:  the new package version
+post_install() {
+  /bin/systemctl preset momd.service > /dev/null 2>&1 || :
+  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+}
+
+post_upgrade() {
+  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+}
+
+## arg 1:  the old package version
+pre_remove() {
+  /bin/systemctl --no-reload disable momd.service > /dev/null 2>&1 || :
+  /bin/systemctl stop momd.service > /dev/null 2>&1 || :
+}
+
+## arg 1:  the old package version
+post_remove() {
+  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+}

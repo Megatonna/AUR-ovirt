@@ -1,0 +1,40 @@
+# Contributor: Andrii Sokolenko
+# Based by Ovirt mom.spec
+pkgname=mom-git
+pkgver=0.5.10.dfea878
+pkgrel=1
+pkgdesc="Dynamically manage system resources on virtualization hosts"
+arch=('i686' 'x86_64')
+url="http://www.ovirt.org/develop/projects/mom/"
+license=('GPLv2')
+groups=()
+depends=('python2' 'python2-nose' 'python2-mock' 'systemd' 'libvirt' 'libvirt-python2' 'procps-ng')
+makedepends=('')
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=$pkgname.install
+source=('git+https://gerrit.ovirt.org/mom.git' 'momd.patch')
+sha256sums=('SKIP' 'SKIP')
+
+_systemddir=/usr/lib/systemd
+
+build() {
+  cd ${srcdir}/${pkgname%%-git}
+  patch -Np0 -i ../momd.patch
+  ./autogen.sh
+  ./configure --prefix=/usr --sbindir=/usr/bin PYTHON=python2
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgname%%-git}
+  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" install
+  #systemd
+  install -D -m 0644 contrib/momd.service $pkgdir/$_systemddir/system/momd.service
+  install -D -m 0644 doc/mom-balloon+ksm.conf $pkgdir/etc/momd.conf
+}
+
+# vim:set ts=2 sw=2 et:
