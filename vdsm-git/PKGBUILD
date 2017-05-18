@@ -1,0 +1,105 @@
+# Contributor: Andrii Sokolenko
+# Based by Ovirt vdsm.spec
+pkgname=vdsm-git
+pkgver=4.18.999.git0bb7717
+pkgrel=1
+pkgdesc="Virtual Desktop Server Manager"
+arch=('i686' 'x86_64')
+url="https://www.ovirt.org/develop/developer-guide/vdsm/vdsm/"
+license=('GPLv2+')
+groups=()
+depends=('python' 'python-nose' 'python-mock' 'python-netaddr' 'python-six' \
+         'libsasl' 'dosfstools' 'libnl' 'libvirt-python' 'mom' \
+         'openssl' 'psmisc' 'python-yaml' 'python-pyinotify' 'qemu' 'sanlock' \
+         'openvswitch' 'systemd' 'libvirt' 'libvirt-python3' 'gettext' 'autoconf' \
+         'automake' 'libtool' 'dmidecode' 'python-dmidecode' 'ethtool' 'which' 'sudo' \
+         'logrotate' 'xz' 'ntp' 'iproute' 'python-argparse' 'python-requests' 'nfs-utils' 'curl' \
+         'lvm2' 'e2fsprogs' 'ed' 'sed' 'openvswitch' 'bridge-utils' 'tree' 'networkmanager' 'usbutils')
+makedepends=('')
+provides=('vdsm' 'vdsm-cli' 'vdsm-xmlrpm' 'vdsm-api' 'vdsm-jsonrpc' 'vdsm-yajsonrpc' \ 
+          'vdsm-python' 'vdsm-tests' 'vdsm-hook-allocate_net' 'vdsm-hook-checkimages' \
+          'vdsm-hook-checkips' 'vdsm-hook-diskunmap' 'vdsm-hook-ethtool-options')
+
+#fence-agents-all ??? - ilo, apc ...
+#initscripts ???
+#virt-v2v
+#sanlock-python
+#python-cpopen
+#python-ioprocess
+#python-pthreading
+#rpm-python
+#genisoimage
+#rpm-build
+#m2crypto
+#safelease  -ovirt
+#shadow-utils - usermod/passwd/etc
+#ovirt-imageio-common(with_ovirt_imageio)
+#ovirt-imageio-daemon(with_ovirt_imageio)
+#ovirt-vmconsole(with_ovirt_vmconsole)
+#libvirt-client
+#libvirt-daemon-config-nwfilter
+#libvirt-lock-sanlock
+#libvirt-python
+#libvirt-daemon-kvm
+#iscsi-initiator-utils
+#device-mapper-multipath
+#qemu-kvm
+#qemu-img
+#glusterfs-cli
+#glusterfs-fuse
+#sos
+#dracut
+#vhostmd (with_vhostmd)
+#fcoe-utils
+#python-libquestfs
+#glusterfs-server(with_gluster_mgmt)
+#glusterfs-api(with_gluster_mgmt)
+#glusterfs-geo-replication(with_gluster_mgmt)
+#python-magic(with_gluster_mgmt)
+#python-blivet(with_gluster_mgmt)
+#xfsprogs(with_gluster_mgmt)
+
+# Network-Manager-config-server
+#This configuration file changes NetworkManager's behavior to
+# what's expected on "traditional UNIX server" type deployments.
+#
+# See "man NetworkManager.conf" for more information about these
+# and other keys.
+
+#[main]
+# Do not do automatic (DHCP/SLAAC) configuration on ethernet devices
+# with no other matching connections.
+#no-auto-default=*
+
+# Ignore the carrier (cable plugged in) state when attempting to
+# activate static-IP connections.
+#ignore-carrier=*#
+
+
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=$pkgname.install
+source=('git+https://gerrit.ovirt.org/vdsm')
+sha256sums=('SKIP' 'SKIP')
+
+_systemddir=/usr/lib/systemd
+
+build() {
+  cd ${srcdir}/${pkgname%%-git}
+  patch -Np0 -i ../momd.patch
+  ./autogen.sh
+  ./configure --prefix=/usr --sbindir=/usr/bin PYTHON=python2
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgname%%-git}
+  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" install
+  #systemd
+  install -D -m 0644 contrib/momd.service $pkgdir/$_systemddir/system/momd.service
+  install -D -m 0644 doc/mom-balloon+ksm.conf $pkgdir/etc/momd.conf
+}
+
+# vim:set ts=2 sw=2 et:
