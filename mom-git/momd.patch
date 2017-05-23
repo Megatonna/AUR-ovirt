@@ -1,8 +1,0 @@
---- momd	2017-05-17 17:59:56.014435266 +0300
-+++ momd.new	2017-05-17 18:03:50.017774874 +0300
-@@ -1,4 +1,4 @@
--#! /usr/bin/env python
-+#! /usr/bin/env python2
- # Memory Overcommitment Manager
- # Copyright (C) 2010 Adam Litke, IBM Corporation
- #

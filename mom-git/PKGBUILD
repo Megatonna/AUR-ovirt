@@ -10,22 +10,23 @@ license=('GPLv2')
 groups=()
 depends=('python2' 'python2-nose' 'python2-mock' 'systemd' 'libvirt' 'libvirt-python2' 'procps-ng')
 makedepends=('')
-provides=()
+provides=('mom')
 conflicts=()
 replaces=()
 backup=()
 options=(!emptydirs)
 install=$pkgname.install
-source=('git+https://gerrit.ovirt.org/mom.git' 'momd.patch')
-sha256sums=('SKIP' 'SKIP')
+source=('git+https://gerrit.ovirt.org/mom.git')
+sha256sums=('SKIP')
 
 _systemddir=/usr/lib/systemd
 
 build() {
   cd ${srcdir}/${pkgname%%-git}
-  patch -Np0 -i ../momd.patch
-  ./autogen.sh
-  ./configure --prefix=/usr --sbindir=/usr/bin PYTHON=python2
+  export PYTHON="$(which python2)"
+  autoreconf -if
+  ./configure --prefix=/usr --sbindir=/usr/bin
+  grep -Rle "/usr/bin/env python" * | xargs sed -ie 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
   make
 }
 
