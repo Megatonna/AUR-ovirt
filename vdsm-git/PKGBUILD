@@ -1,7 +1,7 @@
 # Contributor: Andrii Sokolenko
 # Based by Ovirt vdsm.spec
 pkgname=vdsm-git
-pkgver=4.18.999.git0bb7717
+pkgver=4.18.999.442.git0bb7717
 pkgrel=1
 pkgdesc="Virtual Desktop Server Manager"
 arch=('i686' 'x86_64')
@@ -88,18 +88,54 @@ _systemddir=/usr/lib/systemd
 
 build() {
   cd ${srcdir}/${pkgname%%-git}
-  patch -Np0 -i ../momd.patch
-  ./autogen.sh
-  ./configure --prefix=/usr --sbindir=/usr/bin PYTHON=python2
+#  patch -Np0 -i ../momd.patch
+  autoreconf -if
+  ./configure --prefix=/usr --enable-hooks --disable-gluster-mgmt --with-smbios-manufacture='Ovirt' \
+    --with-smbios-osname='Ovirt Node' --disable-ovirt-imageio --with-ovirt-vmconsole-user='vdsm' \
+    --with-ovirt-vmconsole-group='kvm' --with-qemu-kvm='qemu' --with-qemu-img='qemu-img'
   make
+  # Setting software_version and software_revision in dsaversion.py
+  _baserelease=`echo "$pkgver" | sed 's/\([0-9]\+\(\.[0-9]\+\)\?\).*/\1/'`
+#  _baseversion=`echo "%{version}" | sed 's/\([0-9]\+\(\.[0-9]\+\)\?\).*/\1/'`
+  _baseversion=$_baserelease
+  _rawversion=$pkgver-$pkgrel
+  _site_dir=`python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
+  sed -i -e 's/^software_version =.*/software_version = "'"${_baseversion}"'"/' \
+           -e 's/^raw_version_revision =.*/raw_version_revision = "'"${_rawversion}"'"/' \
+                  -e 's/^software_revision =.*/software_revision = "'"${_baserelease}"'"/' lib/vdsm/dsaversion.py
+
+  sed -i -e 's/@SSL_IMPLEMENTATION@/m2c/g' lib/vdsm/config.py
+
+  sed -i -e 's\@VDSMRPCPYLIBDIR@\${_site_dir}/vdsm/rpc\g' lib/vdsm/constants.py
 }
 
 package() {
   cd ${srcdir}/${pkgname%%-git}
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" install
+
+  install -dDm 0755 ${pkgdir}/var/log/vdsm
+  touch ${pkgdir}/var/log/vdsm/{connectivity.log,mom.log,supervdsm.log,vdsm.log}
+
+  # Install the lvm rules
+  install -Dm 0644 vdsm/storage/vdsm-lvm.rules \
+                     ${pkgdir}/etc/udev/rules.d/12-vdsm-lvm.rules
   #systemd
-  install -D -m 0644 contrib/momd.service $pkgdir/$_systemddir/system/momd.service
-  install -D -m 0644 doc/mom-balloon+ksm.conf $pkgdir/etc/momd.conf
+  install -Dm 0755 init/systemd/systemd-vdsmd ${pkgdir}/${_systemddir}/systemd-vdsmd
+  install -Dm 0644 init/systemd/85-vdsmd.preset ${pkgdir}/${_systemddir}/system-preset/85-vdsmd.preset
+
+  install -Dm 0644 init/systemd/vdsm-tmpfiles.d.conf \
+                     ${pkgdir}/etc/tmpfiles.d/vdsm.conf
+  install -Dm 0644 init/systemd/unlimited-core.conf \
+                     ${pkgdir}/etc/systemd/system/libvirtd.service.d/unlimited-core.conf
+  install -Dm 0644 vdsm_hooks/fcoe/85-vdsm-hook-fcoe.preset ${pkgdir}/${_systemddir}/system-preset/
+  # Install the polkit for libvirt
+  install -Dm 0644 vdsm/vdsm-libvirt-access.rules \
+                    ${pkgdir}/etc/polkit-1/rules.d/10-vdsm-libvirt-access.rules
+
+# Install the libvirt hook for cleaning up the XML
+  install -Dm 0755 vdsm/virt/libvirt-hook.sh \
+                   ${pkgdir}/etc/libvirt/hooks/qemu
+
 }
 
 # vim:set ts=2 sw=2 et:

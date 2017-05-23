@@ -1,0 +1,67 @@
+# This is a default template for a post-install scriptlet.
+# Uncomment only required functions and remove any functions
+# you don't need (and this header).
+_vdsm_user='vdsm'
+_vdsm_group='kvm'
+_qemu_group='qemu'
+_snlk_group='sanlock'
+_cdrom_group='cdrom'
+
+pre_install() {
+	export LC_ALL=C
+	/usr/bin/getent passwd ${_vdsm_user} >/dev/null || \
+		    /usr/sbin/useradd -r -u 36 -g ${_vdsm_group} -d /var/lib/vdsm \
+		            -s /sbin/nologin -c "Node Virtualization Manager" ${_vdsm_user}
+	/usr/sbin/usermod -a -G ${_qemu_group},${_snlk_group} ${_vdsm_user}
+	/usr/sbin/usermod -a -G ${_cdrom_group} ${_qemu_user}
+}
+post_install() {
+	touch /var/log/vdsm/{connectivity.log,mom.log,supervdsm.log,vdsm.log}
+	chmod 0644 /var/log/vdsm/{connectivity.log,mom.log,supervdsm.log,vdsm.log}
+	chown vdsm:kvm /var/log/vdsm/{connectivity.log,mom.log,vdsm.log}
+	chown root:root /var/log/vdsm/supervdsm.log
+	/bin/systemctl restart systemd-modules-load.service >/dev/null 2>&1 || :
+	/bin/systemctl preset vdsmd.service supervdsmd.service \ 
+		vdsm-network.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+	/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+}
+
+post_upgrade() {
+   supervdsmd_start_required='no'
+   vdsmd_start_required='no'
+
+   # Both vdsm and supervdsm should be managed here and must be restarted if
+   # ran before (code might changed)
+   if /bin/vdsm-tool service-status vdsmd >/dev/null 2>&1; then
+       /bin/vdsm-tool service-stop vdsmd >/dev/null 2>&1 || :
+       vdsmd_start_required='yes'
+   fi
+   if /bin/vdsm-tool service-status supervdsmd >/dev/null 2>&1; then
+       /bin/vdsm-tool service-stop supervdsmd >/dev/null 2>&1 || :
+       supervdsmd_start_required='yes'
+   fi
+   if ! /bin/vdsm-tool is-configured >/dev/null 2>&1; then
+         /bin/vdsm-tool configure --force >/dev/null 2>&1
+   fi
+   if [ "${supervdsmd_start_required}" = 'yes' ]; then
+       /bin/vdsm-tool service-start supervdsmd >/dev/null 2>&1 || :
+   fi
+   if [ "${vdsmd_start_required}" = 'yes' ]; then
+       /bin/vdsm-tool service-start vdsmd >/dev/null 2>&1 || :
+   fi
+  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+}
+
+## arg 1:  the old package version
+pre_remove() {
+  /bin/vdsm-tool remove-config
+  /bin/systemctl --no-reload disable vdsmd.service supervdsmd.service \ 
+		vdsm-network.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+  /bin/systemctl stop vdsmd.service supervdsmd.service \ 
+		vdsm-network.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+ }
+
+## arg 1:  the old package version
+post_remove() {
+  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+}
