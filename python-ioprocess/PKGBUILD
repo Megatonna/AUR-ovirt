@@ -11,7 +11,8 @@ groups=()
 conflicts=()
 replaces=()
 backup=()
-depends=('yajl')
+depends=('yajl' 'python3')
+provides=('python3-ioprocess')
 options=(!emptydirs)
 install=()
 source=('git+https://gerrit.ovirt.org/p/ioprocess.git')
@@ -26,8 +27,6 @@ build() {
 }
 
 package() {
-  depends=('python3')
-  provides=('python3-${pkgname%%-git}')
   cd ${srcdir}/${pkgname%%-git}
   make DESTDIR=${pkgdir} install
 }
