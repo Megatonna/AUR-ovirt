@@ -1,0 +1,30 @@
+# Contributor: Andrii Sokolenko
+pkgname=(pthreading-git)
+pkgver=0.15.gitcad4584
+pkgrel=1
+pkgdesc="Reimplement threading.Lock, RLock, and Condition with libpthread."
+arch=('i686' 'x86_64')
+url="https://github.com/oVirt/pthreading"
+license=('GPLv2+')
+groups=()
+conflicts=()
+replaces=()
+backup=()
+depends=('python2')
+provides=('python2-pthreading')
+options=(!emptydirs)
+install=()
+source=('git+https://gerrit.ovirt.org/p/pthreading.git')
+sha256sums=('SKIP')
+
+build() {
+  cd ${srcdir}/${pkgname%%-git}
+  python2 setup.py build
+}
+
+package() {
+  cd ${srcdir}/${pkgname%%-git}
+  python2 setup.py install --root=${pkgdir} --prefix=/usr  
+}
+
+# vim:set ts=2 sw=2 et:
