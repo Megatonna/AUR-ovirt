@@ -15,7 +15,7 @@ depends=('python' 'python-nose' 'python-mock' 'python-netaddr' 'python-six' \
          'automake' 'libtool' 'dmidecode' 'python-dmidecode' 'ethtool' 'which' 'sudo' \
          'logrotate' 'xz' 'ntp' 'iproute' 'python-argparse' 'python-requests' 'nfs-utils' 'curl' \
          'lvm2' 'e2fsprogs' 'ed' 'sed' 'openvswitch' 'bridge-utils' 'tree' 'networkmanager' 'usbutils' \
-         'python2-cpopen' 'python3-ioprocess')
+         'python2-cpopen' 'python3-ioprocess' 'python2-pthreading' 'python2-m2crypto' 'sos')
 makedepends=('')
 provides=('vdsm' 'vdsm-cli' 'vdsm-xmlrpm' 'vdsm-api' 'vdsm-jsonrpc' 'vdsm-yajsonrpc' \ 
           'vdsm-python' 'vdsm-tests' 'vdsm-hook-allocate_net' 'vdsm-hook-checkimages' \
@@ -25,11 +25,9 @@ provides=('vdsm' 'vdsm-cli' 'vdsm-xmlrpm' 'vdsm-api' 'vdsm-jsonrpc' 'vdsm-yajson
 #initscripts ???
 #virt-v2v
 #sanlock-python
-#python-pthreading
 #rpm-python
 #genisoimage
 #rpm-build
-#m2crypto
 #safelease  -ovirt
 #shadow-utils - usermod/passwd/etc
 #ovirt-imageio-common(with_ovirt_imageio)
@@ -46,7 +44,6 @@ provides=('vdsm' 'vdsm-cli' 'vdsm-xmlrpm' 'vdsm-api' 'vdsm-jsonrpc' 'vdsm-yajson
 #qemu-img
 #glusterfs-cli
 #glusterfs-fuse
-#sos
 #dracut
 #vhostmd (with_vhostmd)
 #fcoe-utils
