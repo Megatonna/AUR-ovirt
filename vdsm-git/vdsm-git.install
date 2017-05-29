@@ -3,9 +3,10 @@
 # you don't need (and this header).
 _vdsm_user='vdsm'
 _vdsm_group='kvm'
-_qemu_group='qemu'
+_qemu_group='kvm'
+_qemu_user='vdsm'
 _snlk_group='sanlock'
-_cdrom_group='cdrom'
+_cdrom_group='optical'
 
 pre_install() {
 	export LC_ALL=C
@@ -16,13 +17,15 @@ pre_install() {
 	/usr/sbin/usermod -a -G ${_cdrom_group} ${_qemu_user}
 }
 post_install() {
-	touch /var/log/vdsm/{connectivity.log,mom.log,supervdsm.log,vdsm.log}
-	chmod 0644 /var/log/vdsm/{connectivity.log,mom.log,supervdsm.log,vdsm.log}
-	chown vdsm:kvm /var/log/vdsm/{connectivity.log,mom.log,vdsm.log}
+	touch /var/log/vdsm/{mom.log,supervdsm.log,vdsm.log}
+	chmod 0644 /var/log/vdsm/{mom.log,supervdsm.log,vdsm.log}
+	chown vdsm:kvm /var/log/vdsm/{mom.log,vdsm.log}
 	chown root:root /var/log/vdsm/supervdsm.log
+	systemd-tmpfiles --create vdsm.conf
 	/bin/systemctl restart systemd-modules-load.service >/dev/null 2>&1 || :
-	/bin/systemctl preset vdsmd.service supervdsmd.service \ 
-		vdsm-network.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+	/bin/systemctl preset vdsmd.service supervdsmd.service vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+	/bin/systemctl preset vdsm-checkips.service > /dev/null 2>&1 || :
+	/bin/systemctl preset lldpad.service fcoe.service > /dev/null 2>&1 || :
 	/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 }
 
@@ -56,9 +59,11 @@ post_upgrade() {
 pre_remove() {
   /bin/vdsm-tool remove-config
   /bin/systemctl --no-reload disable vdsmd.service supervdsmd.service \ 
-		vdsm-network.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+		vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
   /bin/systemctl stop vdsmd.service supervdsmd.service \ 
-		vdsm-network.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+		vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable vdsm-checkips.service > /dev/null 2>&1 || :
+  /bin/systemctl stop vdsm-checkips.service > /dev/null 2>&1 || : 
  }
 
 ## arg 1:  the old package version

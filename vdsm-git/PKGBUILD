@@ -1,59 +1,99 @@
 # Contributor: Andrii Sokolenko
-# Based by Ovirt vdsm.spec
+# Based by Ovirt repo fc25 vdsm.spec
 pkgname=vdsm-git
-pkgver=4.18.999.442.git0bb7717
-pkgrel=0
+pkgver=4.20.890.gitef66674
+pkgrel=1
 pkgdesc="Virtual Desktop Server Manager"
 arch=('i686' 'x86_64')
 url="https://www.ovirt.org/develop/developer-guide/vdsm/vdsm/"
 license=('GPLv2+')
 groups=()
-depends=('python' 'python-nose' 'python-mock' 'python-netaddr' 'python-six' \
-         'libsasl' 'dosfstools' 'libnl' 'libvirt-python' 'mom' \
-         'openssl' 'psmisc' 'python-yaml' 'python2-yaml' 'python-pyinotify' 'qemu' 'sanlock' \
-         'openvswitch' 'systemd' 'libvirt' 'libvirt-python' 'gettext' 'autoconf' \
-         'automake' 'libtool' 'dmidecode' 'python-dmidecode' 'ethtool' 'which' 'sudo' \
-         'logrotate' 'xz' 'ntp' 'iproute' 'python-argparse' 'python-requests' 'nfs-utils' 'curl' \
-         'lvm2' 'e2fsprogs' 'ed' 'sed' 'openvswitch' 'bridge-utils' 'tree' 'networkmanager' 'usbutils' \
-         'python2-cpopen' 'python3-ioprocess' 'python2-pthreading' 'python2-m2crypto' 'sos')
-makedepends=('')
+makedepends=('openssl' \
+             'python' \
+             'python-cpopen' \
+             'python-six >= 1.9.0' \
+             'python-dateutil' \
+             'python-yaml' \
+             'systemd' \
+             'autoconf' \
+             'automake' \
+             'gettext' \
+             'libtool')
+#libguestfs - virt-v2v
+depends=('dmidecode' \
+         'python-dmidecode' \
+         'libguestfs' \
+         'libguestfs-python3' \
+         'chrony' \
+         'dhclient' \
+         'python-dbus' \
+         'ethtool' \
+         'which' \
+         'sudo >= 1.7.3' \
+         'logrotate' \
+         'lshw' \
+         'xz' \
+         'iproute >= 3.10.0' \
+         'python-yaml' \
+         'python-dateutil' \
+         'python-netaddr' \
+         'python-pyinotify' \
+         'python-cpopen >= 1.5' \
+         'python-ioprocess >= 0.16.1' \
+         'python-pthreading >= 0.1.3-3' \
+         'python-six >= 1.9.0' \
+         'nfs-utils' \
+         'libnl' \
+         'abrt-addon-vmcore++' \
+         'abrt-addon-ccpp++' \
+         'abrt-addon-python++' \
+         'curl' \
+         'safelease++>= 1.0' \
+         'mom >= 0.5.8' \
+         'openvswitch >= 2.0.0' \
+         'libvirt' \
+         'libvirt-python >= 2.2.0-1' \
+         'open-iscsi' \
+         'sanlock >= 3.4.0' \
+         'sanlock-python' \
+         'multipath-tools' \
+         'ovirt-imageio-common' \
+         'ovirt-imageio-daemon' \
+         'ovirt-vmconsole >= 1.0.0' \
+         'libvirt-client' \
+         'libvirt-daemon-config-nwfilter' \
+         'libvirt-lock-sanlock' \
+         'libvirt-daemon-kvm' \
+         'libvirt-python >= 2.2.0' \
+         'systemd' \
+         'python >= 2.7.3' \
+         'e2fsprogs >= 1.41.14' \
+         'sed >= 4.2.1' \
+         'ed' \
+         'lvm2 >= 2.02.132' \
+         'qemu-kvm' \
+         'glusterfs' \
+         'psmisc >= 22.6' \
+         'bridge-utils' \
+         'sos' \
+         'tree' \
+         'dosfstools' \
+         'cdrtools' \
+         'fence-agents' \
+         'qemu-kvm' \
+         'glusterfs' \
+         'python2-decorator' \
+         'libsasl' \
+         'inetutils' \
+         'vhostmd' \
+         'usbutils' \
+         'fcoe-utils' \
+         'python-magic' \
+         'python-blivet' \
+         'xfsprogs')
 provides=('vdsm' 'vdsm-cli' 'vdsm-xmlrpm' 'vdsm-api' 'vdsm-jsonrpc' 'vdsm-yajsonrpc' \ 
           'vdsm-python' 'vdsm-tests' 'vdsm-hook-allocate_net' 'vdsm-hook-checkimages' \
           'vdsm-hook-checkips' 'vdsm-hook-diskunmap' 'vdsm-hook-ethtool-options')
-
-#fence-agents-all ??? - ilo, apc ...
-#initscripts ???
-#virt-v2v
-#sanlock-python
-#rpm-python
-#genisoimage
-#rpm-build
-#safelease  -ovirt
-#shadow-utils - usermod/passwd/etc
-#ovirt-imageio-common(with_ovirt_imageio)
-#ovirt-imageio-daemon(with_ovirt_imageio)
-#ovirt-vmconsole(with_ovirt_vmconsole)
-#libvirt-client
-#libvirt-daemon-config-nwfilter
-#libvirt-lock-sanlock
-#libvirt-python
-#libvirt-daemon-kvm
-#iscsi-initiator-utils
-#device-mapper-multipath
-#qemu-kvm
-#qemu-img
-#glusterfs-cli
-#glusterfs-fuse
-#dracut
-#vhostmd (with_vhostmd)
-#fcoe-utils
-#python-libquestfs
-#glusterfs-server(with_gluster_mgmt)
-#glusterfs-api(with_gluster_mgmt)
-#glusterfs-geo-replication(with_gluster_mgmt)
-#python-magic(with_gluster_mgmt)
-#python-blivet(with_gluster_mgmt)
-#xfsprogs(with_gluster_mgmt)
 
 # Network-Manager-config-server
 #This configuration file changes NetworkManager's behavior to
@@ -85,11 +125,15 @@ _systemddir=/usr/lib/systemd
 build() {
   cd ${srcdir}/${pkgname%%-git}
 #  patch -Np0 -i ../momd.patch
-  export PYTHON="$(which python3)"
+#  export PYTHON="$(which python2)"
   autoreconf -if
-  ./configure --prefix=/usr --enable-hooks --disable-gluster-mgmt --with-smbios-manufacture='Ovirt' \
-    --with-smbios-osname='Ovirt Node' --disable-ovirt-imageio --with-ovirt-vmconsole-user='vdsm' \
-    --with-ovirt-vmconsole-group='kvm' --with-qemu-kvm='qemu' --with-qemu-img='qemu-img'
+  ./configure --prefix=/usr --libexec=/usr/lib --sysconfdir=/etc \
+    --enable-hooks \
+    --with-smbios-manufacture='oVirt' \
+    --with-smbios-osname='oVirt Node' \
+    --with-ovirt-vmconsole-user='vdsm' \
+    --with-ovirt-vmconsole-group='kvm' \
+    --with-data-center='/rhev/data-center'
   make
   # Setting software_version and software_revision in dsaversion.py
   _baserelease=`echo "$pkgver" | sed 's/\([0-9]\+\(\.[0-9]\+\)\?\).*/\1/'`
@@ -101,17 +145,16 @@ build() {
            -e 's/^raw_version_revision =.*/raw_version_revision = "'"${_rawversion}"'"/' \
                   -e 's/^software_revision =.*/software_revision = "'"${_baserelease}"'"/' lib/vdsm/dsaversion.py
 
-  sed -i -e 's/@SSL_IMPLEMENTATION@/m2c/g' lib/vdsm/config.py
-
   sed -i -e 's\@VDSMRPCPYLIBDIR@\${_site_dir}/vdsm/rpc\g' lib/vdsm/constants.py
 }
 
 package() {
   cd ${srcdir}/${pkgname%%-git}
+#  export PYTHON="$(which python2)"
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" install
 
   install -dDm 0755 ${pkgdir}/var/log/vdsm
-  touch ${pkgdir}/var/log/vdsm/{connectivity.log,mom.log,supervdsm.log,vdsm.log}
+  touch ${pkgdir}/var/log/vdsm/{mom.log,supervdsm.log,vdsm.log}
 
   # Install the lvm rules
   install -Dm 0644 vdsm/storage/vdsm-lvm.rules \
