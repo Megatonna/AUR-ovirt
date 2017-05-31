@@ -1,0 +1,86 @@
+# Contributor: Andrii Sokolenko
+# Based by Fedora abrt.spec
+pkgname=abrt-git
+pkgver=2.10.2.git3ab10d
+pkgrel=1
+pkgdesc="Automatic bug detection and reporting tool"
+arch=('i686' 'x86_64')
+url="https://github.com/abrt/abrt"
+license=('GPLv2')
+groups=()
+makedepends=('git' \
+             'gtk3' \
+             'dbus' \
+             'glib2' \
+             'libnotify' \
+             'desktop-file-utils' \
+             'python2' \
+             'python' \
+             'gettext' \
+             'libxml2' \
+             'intltool' \
+             'libtool' \
+             'nss' \
+             'asciidoc' \
+             'doxygen' \
+             'xmlto' \
+             'libreport' \
+             'satyr' \
+             'python2-systemd' \
+             'python-systemd' \
+             'augeas' \
+             'python-argh' \
+             'python2-argh'
+             'python-humanize' \
+             'python2-humanize' \
+             'python-argcomplete' \
+             'python2-argcomplete' \
+             'json-c' \
+             'hawkey' \
+             'python-nose' \
+             'python-sphinx' \
+             'polkit')
+depends=('libreport' 'satyr' 'shadow' 'python-augeas' 'python-dbus' 'python-dmidecode' 'cpio' 
+          'gdb' 'elfutils' 'xz' 'tar' 'curl' 'systemd' 'kexec-tools' 'python2-argh' 'python-argh'
+          'python-humanize' 'python2-humanize' 'python-argcomplete' 'python2-argcomplete' 'python2-systemd'
+          'python-dbus' 'python2-dbus')
+provides=('abrt')
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=$pkgname.install
+source=('git+https://github.com/abrt/abrt.git')
+sha256sums=('SKIP')
+
+_systemddir=/usr/lib/systemd
+
+build() {
+  cd ${srcdir}/${pkgname%%-git}
+  autoreconf --force --install
+  intltoolize --force --copy --automake
+  ./configure --prefix=/usr --sbindir=/usr/bin \
+    --enable-doxygen-docs \
+    --enable-native-unwinder \
+    --without-atomic \
+    --without-selinux \
+    --without-rpm \
+    --enable-dump-time-unwind \
+    --disable-silent-rules
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgname%%-git}
+  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" install
+#  mkdir -p ${RPM_BUILD_ROOT}/%{_initrddir}
+  mkdir -p $pkgdir/var/cache/abrt-di
+  mkdir -p $pkgdir/var/run/abrt
+  mkdir -p $pkgdir/var/spool/abrt
+  mkdir -p $pkgdir/var/spool/abrt-upload
+  mkdir -p $pkgdir/lib/abrt
+
+  install -Dpm0644 src/cli-ng/abrt.bash_completion $pkgdir/usr/share/bash-completion/completions/abrt
+}
+
+# vim:set ts=2 sw=2 et:
