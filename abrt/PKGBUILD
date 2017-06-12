@@ -22,7 +22,6 @@ makedepends=('git' \
              'libtool' \
              'nss' \
              'asciidoc' \
-             'doxygen' \
              'xmlto' \
              'libreport' \
              'satyr' \
@@ -39,16 +38,17 @@ makedepends=('git' \
              'hawkey' \
              'python-nose' \
              'python-sphinx' \
-             'polkit')
+             'polkit' \
+             'dbus-glib')
 depends=('libreport' 'satyr' 'shadow' 'python-augeas' 'python-dbus' 'python-dmidecode' 'cpio' 
           'gdb' 'elfutils' 'xz' 'tar' 'curl' 'systemd' 'kexec-tools' 'python2-argh' 'python-argh'
           'python-humanize' 'python2-humanize' 'python-argcomplete' 'python2-argcomplete' 'python2-systemd'
-          'python-dbus' 'python2-dbus')
+          'python-dbus' 'python2-dbus' 'dbus-glib')
 provides=('abrt')
 conflicts=()
 replaces=()
 backup=()
-options=(!emptydirs)
+options=()
 install=$pkgname.install
 source=('git+https://github.com/abrt/abrt.git')
 sha256sums=('SKIP')
@@ -57,13 +57,15 @@ _systemddir=/usr/lib/systemd
 
 build() {
   cd ${srcdir}/${pkgname%%-git}
-  autoreconf --force --install
-  intltoolize --force --copy --automake
-  ./configure --prefix=/usr --sbindir=/usr/bin \
-    --enable-doxygen-docs \
+  export PYTHON=$(which python2)
+  sed -ie 's/python-config/python2-config/g' configure.ac
+  ./autogen.sh
+  ./configure --prefix=/usr --sbindir=/usr/bin --libexecdir=/usr/lib/abrt --localstatedir=/var --sysconfdir=/etc \
     --enable-native-unwinder \
+    --with-python3 \
     --without-atomic \
     --without-selinux \
+    --without-bodhi \
     --without-rpm \
     --enable-dump-time-unwind \
     --disable-silent-rules
@@ -74,13 +76,12 @@ package() {
   cd ${srcdir}/${pkgname%%-git}
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" install
 #  mkdir -p ${RPM_BUILD_ROOT}/%{_initrddir}
-  mkdir -p $pkgdir/var/cache/abrt-di
-  mkdir -p $pkgdir/var/run/abrt
-  mkdir -p $pkgdir/var/spool/abrt
-  mkdir -p $pkgdir/var/spool/abrt-upload
-  mkdir -p $pkgdir/lib/abrt
-
+  install -dDm 0755 $pkgdir/var/cache/abrt-di
+  install -dDm 0755 $pkgdir/run/abrt
+  install -dDm 0755 $pkgdir/var/spool/abrt
+  install -dDm 0755 $pkgdir/var/spool/abrt-upload
   install -Dpm0644 src/cli-ng/abrt.bash_completion $pkgdir/usr/share/bash-completion/completions/abrt
+  rm -rf $pkgdir/var/run
 }
 
 # vim:set ts=2 sw=2 et:

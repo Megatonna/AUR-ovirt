@@ -115,7 +115,7 @@ provides=('vdsm' 'vdsm-cli' 'vdsm-xmlrpm' 'vdsm-api' 'vdsm-jsonrpc' 'vdsm-yajson
 conflicts=()
 replaces=()
 backup=()
-options=(!emptydirs)
+#options=(!emptydirs)
 install=$pkgname.install
 source=('git+https://gerrit.ovirt.org/vdsm')
 sha256sums=('SKIP')
@@ -124,9 +124,9 @@ _systemddir=/usr/lib/systemd
 
 build() {
   cd ${srcdir}/${pkgname%%-git}
-#  patch -Np0 -i ../momd.patch
-#  export PYTHON="$(which python2)"
-  autoreconf -if
+  export PYTHON="$(which python2)"
+  sed -ie 's/python-config/python2-config/g' configure.ac
+  ./autogen.sh
   ./configure --prefix=/usr --libexec=/usr/lib --sysconfdir=/etc \
     --enable-hooks \
     --with-smbios-manufacture='oVirt' \

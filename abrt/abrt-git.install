@@ -1,0 +1,36 @@
+# This is a default template for a post-install scriptlet.
+# Uncomment only required functions and remove any functions
+# you don't need (and this header).
+_abrt_gid_uid=173
+
+pre_install() {
+	getent group abrt >/dev/null || groupadd -f -g ${_abrt_gid_uid} --system abrt
+	getent passwd abrt >/dev/null || useradd --system -g abrt -u ${_abrt_gid_uid} -d /etc/abrt -s /sbin/nologin abrt
+}
+post_install() {
+	/bin/systemctl preset abrt-ccpp.service abrt-journal-core.service abrt-oops.service abrtd.service > /dev/null 2>&1 || :	
+	/bin/systemctl preset abrt-xorg.service abrt-vmcore.service abrt-pstoreoops.service > /dev/null 2>&1 || :
+	/bin/systemctl preset abrt-upload-watch.service > /dev/null 2>&1 || :
+	chown -R abrt:abrt /var/cache/abrt-di
+	journalctl --update-catalog
+}
+
+post_upgrade() {
+  /bin/systemctl try-restart abrtd.service \ 
+		abrt-ccpp.service abrt-journal-core.service abrt-oops.service abrt-xorg.service \ 
+		abrt-vmcore.service abrt-pstoreoops.service abrt-upload-watch.service > /dev/null 2>&1 || :
+
+}
+
+## arg 1:  the old package version
+pre_remove() {
+  /bin/systemctl --no-reload disable --now abrtd.service 
+  /bin/systemctl --no-reload disable --now abrt-ccpp.service abrt-journal-core.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable --now abrt-oops.service abrt-xorg.service > /dev/null 2>&1 ||:
+  /bin/systemctl --no-reload disable --now abrt-vmcore.service abrt-pstoreoops.service abrt-upload-watch.service > /dev/null 2>&1 || :
+ }
+
+## arg 1:  the old package version
+post_remove() {
+  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+}
