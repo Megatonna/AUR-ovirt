@@ -1,5 +1,6 @@
 # Contributor: Andrii Sokolenko
-pkgname=(pthreading-git)
+pkgbase=(pthreading-git)
+pkgname=(python2-pthreading python-pthreading)
 pkgver=0.15.gitcad4584
 pkgrel=1
 pkgdesc="Reimplement threading.Lock, RLock, and Condition with libpthread."
@@ -10,21 +11,32 @@ groups=()
 conflicts=()
 replaces=()
 backup=()
-depends=('python2')
-provides=('python2-pthreading')
 options=(!emptydirs)
 install=()
 source=('git+https://gerrit.ovirt.org/p/pthreading.git')
 sha256sums=('SKIP')
-
-build() {
-  cd ${srcdir}/${pkgname%%-git}
-  python2 setup.py build
+makedepends=('python' 'python2')
+checkdepends=('python-tox' 'python2-tox' 'python-pytest' 'python2-pytest')
+prepare() {
+  mkdir -p build-{python2,python}
+}
+check() {
+  cd ${srcdir}/${pkgbase%%-git}
+  LC_CTYPE=en_US.UTF-8 tox 
+  LC_CTYPE=en_US.UTF-8 tox2
 }
 
-package() {
-  cd ${srcdir}/${pkgname%%-git}
-  python2 setup.py install --root=${pkgdir} --prefix=/usr  
+package_python2-pthreading() {
+depends=('python2')
+cd ${srcdir}/${pkgbase%%-git}
+CPOPEN_VERSION=${pkgver%%.git} python2 setup.py build -b ${srcdir}/build-python2 install -O1 --root=${pkgdir} --prefix=/usr
+}
+
+package_python-pthreading() {
+provides=("python3-pthreading")
+depends=('python3')
+cd ${srcdir}/${pkgbase%%-git}
+CPOPEN_VERSION=${pkgver%%.git} python3 setup.py build -b ${srcdir}/build-python install -O1 --root=${pkgdir} --prefix=/usr
 }
 
 # vim:set ts=2 sw=2 et:
