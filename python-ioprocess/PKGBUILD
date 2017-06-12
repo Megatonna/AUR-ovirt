@@ -13,12 +13,20 @@ conflicts=()
 replaces=()
 backup=()
 depends=('yajl' 'python3')
+checkdepends=('python-tox')
 provides=()
 options=(!emptydirs)
 install=()
 source=('git+https://gerrit.ovirt.org/p/ioprocess.git')
 sha256sums=('SKIP')
-
+prepare() {
+    cd ${srcdir}/${pkgbase%%-git}/bindings/python
+    sed -ie 's/python3.5/python3/g' tox.ini
+}
+check() {
+    cd ${srcdir}/${pkgbase%%-git}/bindings/python
+    tox
+}
 build() {
   cd ${srcdir}/${pkgbase%%-git}
   ./autogen.sh
