@@ -20,6 +20,8 @@ install=()
 source=('git+https://gerrit.ovirt.org/p/ioprocess.git')
 sha256sums=('SKIP')
 prepare() {
+    grep -Rle "#\!/usr/bin/python" * | xargs -r sed -ie 's/#!\/usr\/bin\/\bpython\b/\#!\/usr\/bin\/python2/g'
+    grep -Rle "/usr/bin/env python" * | xargs -r sed -ie 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
     cd ${srcdir}/${pkgbase%%-git}/bindings/python
     sed -ie 's/python3.5/python3/g' tox.ini
 }
@@ -29,9 +31,9 @@ check() {
 }
 build() {
   cd ${srcdir}/${pkgbase%%-git}
+  export PYTHON=$(which python3) 
   ./autogen.sh
-  PYTHON=$(which python3) ./configure \
-    --prefix=/usr --libexec=/usr/lib/ioprocess/
+  ./configure --prefix=/usr --libexec=/usr/lib/ioprocess/
   make
 }
 

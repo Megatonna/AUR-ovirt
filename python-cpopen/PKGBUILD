@@ -14,6 +14,7 @@ replaces=()
 backup=()
 options=(!emptydirs)
 install=()
+checkdepends=('python-nose')
 source=('git+https://gerrit.ovirt.org/p/cpopen.git')
 sha256sums=('SKIP')
 
@@ -21,17 +22,26 @@ prepare() {
   mkdir -p build-{python2,python}
 }
 
+check() {
+  cd ${srcdir}/${pkgbase%%-git}
+#  nosetests2 tests/tests.py
+}
+
+build() {
+  cd ${srcdir}/${pkgbase%%-git}
+  CPOPEN_VERSION=${pkgver%%.git} python2 setup.py build
+  CPOPEN_VERSION=${pkgver%%.git} python3 setup.py build
+}
+
 package_python2-cpopen() {
   depends=('python2')
-  provides=("python2-cpopen ${pkgver}")
   cd ${srcdir}/${pkgbase%%-git}
-  CPOPEN_VERSION=${pkgver%%.git} python2 setup.py build -b ${srcdir}/build-python2 install --root=${pkgdir} --prefix=/usr
+  CPOPEN_VERSION=${pkgver%%.git} python2 setup.py install --root=${pkgdir} --prefix=/usr
 }
 
 package_python-cpopen() {
   depends=('python3')
-  provides=("python-cpopen ${pkgver}")
   cd ${srcdir}/${pkgbase%%-git}
-  CPOPEN_VERSION=${pkgver%%.git} python3 setup.py build -b ${srcdir}/build-python install --root=${pkgdir} --prefix=/usr
+  CPOPEN_VERSION=${pkgver%%.git} python3 setup.py install --root=${pkgdir} --prefix=/usr
 }
 # vim:set ts=2 sw=2 et:
