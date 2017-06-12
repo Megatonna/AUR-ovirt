@@ -19,6 +19,8 @@ makedepends=('python' 'python2')
 checkdepends=('python-tox' 'python2-tox' 'python-pytest' 'python2-pytest')
 prepare() {
   mkdir -p build-{python2,python}
+  grep -Rle "#\!/usr/bin/python" * | xargs -r sed -ie 's/#!\/usr\/bin\/\bpython\b/\#!\/usr\/bin\/python2/g'
+  grep -Rle "/usr/bin/env python" * | xargs -r sed -ie 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
 }
 check() {
   cd ${srcdir}/${pkgbase%%-git}
@@ -29,14 +31,14 @@ check() {
 package_python2-pthreading() {
 depends=('python2')
 cd ${srcdir}/${pkgbase%%-git}
-CPOPEN_VERSION=${pkgver%%.git} python2 setup.py build -b ${srcdir}/build-python2 install -O1 --root=${pkgdir} --prefix=/usr
+python2 setup.py build -b ${srcdir}/build-python2 install -O1 --root=${pkgdir} --prefix=/usr
 }
 
 package_python-pthreading() {
 provides=("python3-pthreading")
 depends=('python3')
 cd ${srcdir}/${pkgbase%%-git}
-CPOPEN_VERSION=${pkgver%%.git} python3 setup.py build -b ${srcdir}/build-python install -O1 --root=${pkgdir} --prefix=/usr
+python3 setup.py build -b ${srcdir}/build-python install -O1 --root=${pkgdir} --prefix=/usr
 }
 
 # vim:set ts=2 sw=2 et:
