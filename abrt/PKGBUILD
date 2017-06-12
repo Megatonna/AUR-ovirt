@@ -44,7 +44,7 @@ depends=('libreport' 'satyr' 'shadow' 'python-augeas' 'python-dbus' 'python-dmid
           'gdb' 'elfutils' 'xz' 'tar' 'curl' 'systemd' 'kexec-tools' 'python2-argh' 'python-argh'
           'python-humanize' 'python2-humanize' 'python-argcomplete' 'python2-argcomplete' 'python2-systemd'
           'python-dbus' 'python2-dbus' 'dbus-glib')
-provides=('abrt')
+provides=('abrt' 'abrt-addon-vmcore' 'abrt-addon-ccpp' 'abrt-addon-python')
 conflicts=()
 replaces=()
 backup=()
@@ -54,6 +54,17 @@ source=('git+https://github.com/abrt/abrt.git')
 sha256sums=('SKIP')
 
 _systemddir=/usr/lib/systemd
+prepare () {
+  grep -Rle "#\!/usr/bin/python" * | xargs sed -ie 's/#!\/usr\/bin\/\bpython\b/\#!\/usr\/bin\/python2/g'
+  grep -Rle "/usr/bin/env python" * | xargs sed -ie 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
+  grep -Rle "\[python -B" * | xargs sed -ie 's/\[python -B/\[python2 -B/g'
+
+}
+check() {
+    cd ${srcdir}/${pkgname%%-git}
+    export PYTHON=$(which python2)
+    make check
+}
 
 build() {
   cd ${srcdir}/${pkgname%%-git}

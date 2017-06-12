@@ -45,9 +45,9 @@ depends=('dmidecode' \
          'python-six>=1.9.0' \
          'nfs-utils' \
          'libnl' \
-         'abrt-addon-vmcore++' \
-         'abrt-addon-ccpp++' \
-         'abrt-addon-python++' \
+         'abrt-addon-vmcore' \
+         'abrt-addon-ccpp' \
+         'abrt-addon-python' \
          'curl' \
          'safelease++>=1.0' \
          'mom>=0.5.8' \
