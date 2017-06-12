@@ -1,7 +1,7 @@
 # Contributor: Andrii Sokolenko
 # Based by Ovirt python-cpopen.spec
 pkgbase=cpopen-git
-pkgname=(python2-cpopen python3-cpopen)
+pkgname=(python2-cpopen python-cpopen)
 pkgver=1.5.git826b5ef
 pkgrel=1
 pkgdesc="A C reimplementation of the tricky bits of Python's Popen"
@@ -18,20 +18,20 @@ source=('git+https://gerrit.ovirt.org/p/cpopen.git')
 sha256sums=('SKIP')
 
 prepare() {
-  mkdir -p build-{python2,python3}
+  mkdir -p build-{python2,python}
 }
 
 package_python2-cpopen() {
   depends=('python2')
-  provides=('python2-cpopen')
+  provides=("python2-cpopen ${pkgver}")
   cd ${srcdir}/${pkgbase%%-git}
   CPOPEN_VERSION=${pkgver%%.git} python2 setup.py build -b ${srcdir}/build-python2 install --root=${pkgdir} --prefix=/usr
 }
 
-package_python3-cpopen() {
+package_python-cpopen() {
   depends=('python3')
-  provides=('python3-cpopen')
+  provides=("python-cpopen ${pkgver}")
   cd ${srcdir}/${pkgbase%%-git}
-  CPOPEN_VERSION=${pkgver%%.git} python3 setup.py build -b ${srcdir}/build-python3 install --root=${pkgdir} --prefix=/usr
+  CPOPEN_VERSION=${pkgver%%.git} python3 setup.py build -b ${srcdir}/build-python install --root=${pkgdir} --prefix=/usr
 }
 # vim:set ts=2 sw=2 et:
