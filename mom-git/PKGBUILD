@@ -21,13 +21,20 @@ sha256sums=('SKIP')
 
 _systemddir=/usr/lib/systemd
 
+prep() {
+  grep -Rle "/usr/bin/env python" * | xargs -r sed -ie 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
+
+}
+check() {
+  cd ${srcdir}/${pkgname%%-git}
+  make check
+}
 build() {
   cd ${srcdir}/${pkgname%%-git}
   export PYTHON="$(which python2)"
-  autoreconf -if
+  ./autogen.sh
   ./configure --prefix=/usr --sbindir=/usr/bin
-  grep -Rle "/usr/bin/env python" * | xargs -r sed -ie 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
-  make
+   make
 }
 
 package() {
