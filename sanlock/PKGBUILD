@@ -1,7 +1,8 @@
 # Contributor: Johannes Dewender  arch at JonnyJD dot net
 # Contributor: Andrii Sokolenko
 # Based by fedora sanlock.spec
-pkgname=sanlock
+pkgbase=sanlock-git
+pkgname=('sanlock' 'python-sanlock')
 pkgver=3.5.0
 pkgrel=1
 pkgdesc="Shared storage lock manager (with Python bindings)"
@@ -9,21 +10,21 @@ arch=('i686' 'x86_64')
 url="https://pagure.io/sanlock/"
 license=('GPL')
 groups=()
-depends=('python' 'systemd' 'libaio' 'libutil-linux')
+depends=('systemd' 'libaio' 'libutil-linux')
 makedepends=('')
 provides=()
 conflicts=()
 replaces=()
 backup=()
 options=(!emptydirs)
-install=sanlock.install
+install=()
 source=('git+https://pagure.io/sanlock.git')
 sha256sums=('SKIP')
 
 _systemddir=/usr/lib/systemd
 
 build() {
-  cd "$srcdir/$pkgname"
+  cd "$srcdir/${pkgbase%%-git}"
   make -C wdmd
   make -C src
   make -C python
@@ -31,12 +32,16 @@ build() {
   make -C reset
   make -C tests
 }
-
-package() {
-  cd "$srcdir/$pkgname"
+package_python-sanlock() {
+  depends=('python3' 'sanlock')
+  cd "$srcdir/${pkgbase%%-git}"
+  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C python install
+}
+package_sanlock() {
+  install=$pkgname.install
+  cd "$srcdir/${pkgbase%%-git}"
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C src install
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C wdmd install
-  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C python install
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C fence_sanlock install
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C reset install
   find tests/ -type f -executable -exec install -DTm 0755 '{}' $pkgdir/usr/share/sanlock/'{}' \;
@@ -51,14 +56,12 @@ package() {
   install -D -m 0644 src/logrotate.sanlock $pkgdir/etc/logrotate.d/sanlock
   install -D -m 0644 src/sanlock.conf $pkgdir/etc/sanlock/sanlock.conf
   install -D -m 0644 init.d/wdmd.sysconfig $pkgdir/etc/sysconfig/wdmd
-                                                                                                            
 
   install -Dd -m 0755 $pkgdir/etc/wdmd.d
   install -Dd -m 0775 $pkgdir/run/sanlock
   install -Dd -m 0775 $pkgdir/run/fence_sanlock
   install -Dd -m 0775 $pkgdir/run/fence_sanlockd
   install -Dd -m 0775 $pkgdir/run/sanlk-resetd
-
 }
 
 # vim:set ts=2 sw=2 et:
