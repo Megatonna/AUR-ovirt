@@ -56,7 +56,7 @@ depends=('dmidecode' \
          'libvirt-python>=2.2.0-1' \
          'open-iscsi' \
          'sanlock>=3.4.0' \
-         'sanlock-python' \
+         'python-sanlock' \
          'multipath-tools' \
          'ovirt-imageio-common' \
          'ovirt-imageio-daemon' \

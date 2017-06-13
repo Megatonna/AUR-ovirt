@@ -1,0 +1,52 @@
+# Contributor: Andrii Sokolenko
+# Based by Fedora fence-agents.spec
+pkgbase=fence-agents
+pkgname=('fence-agents')
+pkgver=4.0.25
+pkgrel=1
+pkgdesc="Collection of scripts to handle remote power management for several devices."
+arch=('i686' 'x86_64')
+url="http://sourceware.org/cluster/wiki/"
+license=('GPLv2+' 'LGPLv2+')
+groups=()
+depends=('python-pexpect' 'python-pycurl' 'python-openwsman' 'python-requests' 'gnutls' \
+         'python-suds' 'inetutils' 'openssl' 'net-snmp' 'sg3_utils' 'openipmi')
+makedepends=('glibc' 'gnutls' 'libxslt' 'python-pexpect' 'python-pycurl' 'python-suds' \
+             'python-requests' 'python-openwsman' 'python2-pexpect' 'python2-pycurl' \
+             'autoconf' 'automake' 'libtool')
+checkdepends=('time')
+optdepends=('amtterm: for AMT compatibile devices' \
+            'multipath-tools: for SCSI persisent reservation over Device Mapper Multipath' \
+            'sbd: for Storage-Based Death' \
+            'libvirt: for virtual machines that are accessed via SSH')
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=()
+source=("https://github.com/ClusterLabs/fence-agents/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+_systemddir=/usr/lib/systemd
+
+check() {
+  cd ${srcdir}/${pkgbase%%-git}-${pkgver}
+  make check
+}
+build() {
+  cd ${srcdir}/${pkgbase%%-git}-${pkgver}
+  ./autogen.sh
+  ./configure --prefix=/usr --sbindir=/usr/bin --libexecdir=/usr/lib/fence
+   make
+}
+
+package_fence-agents() {
+  cd ${srcdir}/${pkgbase%%-git}-${pkgver}
+  make DESTDIR="$pkgdir" install
+  #systemd
+#  install -D -m 0644 contrib/momd.service $pkgdir/$_systemddir/system/momd.service
+#  install -D -m 0644 doc/mom-balloon+ksm.conf $pkgdir/etc/momd.conf
+}
+
+# vim:set ts=2 sw=2 et:
