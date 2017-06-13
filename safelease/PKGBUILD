@@ -1,0 +1,41 @@
+# Contributor: Andrii Sokolenko
+# Based by Ovirt safelease.spec
+pkgbase=safelease-git
+pkgname=('safelease')
+pkgver=1.0.gitd7fca0
+pkgrel=1
+pkgdesc="Legacy locking utility for VDSM"
+arch=('i686' 'x86_64')
+url="http://www.ovirt.org/Safelease"
+license=('GPLv2+')
+groups=()
+depends=('python-dmidecode' 'libguestfs')
+makedepends=('autoconf' 'automake')
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=()
+source=('git+https://gerrit.ovirt.org/safelease.git')
+sha256sums=('SKIP')
+
+_systemddir=/usr/lib/systemd
+
+check() {
+  cd ${srcdir}/${pkgbase%%-git}
+  make check
+}
+build() {
+  cd ${srcdir}/${pkgbase%%-git}
+  ./autogen.sh --system
+  ./configure --prefix=/usr --libexecdir=/usr/lib/
+   make
+}
+
+package_safelease() {
+  cd ${srcdir}/${pkgbase%%-git}
+  make DESTDIR="$pkgdir" install
+}
+
+# vim:set ts=2 sw=2 et:
