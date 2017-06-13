@@ -12,23 +12,31 @@ conflicts=()
 replaces=()
 backup=()
 depends=('python3' 'python-lxml' 'python-six' 'xz' 'bzip2' 'gettext')
+checkdepends=('python-nose')
 provides=('python3-sos' 'sos' 'sosreport' 'python3-sosreport')
 options=(!emptydirs)
 install=()
 source=('git+https://github.com/sosreport/sos.git')
 sha256sums=('SKIP')
 
+check() {
+  cd ${srcdir}/${pkgname%%-git}
+  make test
+}
 build() {
   cd ${srcdir}/${pkgname%%-git}
   # BZ1427445
   sed 's/@SOSVERSION@/%{version}/g' sos/__init__.py.in > sos/__init__.py
-  python3 setup.py build
+#  python3 setup.py build
+  make
 }
 
 package() {
   cd ${srcdir}/${pkgname%%-git}
-  python3 setup.py install --root=${pkgdir} --prefix=/usr --install-scripts=/usr/bin
+#  python3 setup.py install --root=${pkgdir} --prefix=/usr --install-scripts=/usr/bin
+  make DESTDIR=${pkgdir} install
   install -Dm644 sos.conf ${pkgdir}/etc/sos.conf
+  mv ${pkgdir}/usr/sbin ${pkgdir}/usr/bin
 }
 
 # vim:set ts=2 sw=2 et:
