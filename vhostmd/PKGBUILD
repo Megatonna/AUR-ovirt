@@ -1,0 +1,49 @@
+# Contributor: Andrii Sokolenko
+# Based by Fedora vhostmd.spec
+pkgbase=vhostmd-git
+pkgname=('vhostmd')
+pkgver=0.5.10.git972ac21
+pkgrel=1
+pkgdesc="Virtualization Host Metrics Daemon"
+arch=('i686' 'x86_64')
+url="https://github.com/vhostmd/vhostmd"
+license=('GPLv2+')
+groups=()
+depends=('libxml2' 'libvirt')
+makedepends=('libxml2' 'libvirt')
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=()
+source=('git+https://github.com/vhostmd/vhostmd.git')
+sha256sums=('SKIP')
+
+_systemddir=/usr/lib/systemd
+
+prep() {
+  cd ${srcdir}/${pkgbase%%-git}
+
+}
+check() {
+  cd ${srcdir}/${pkgbase%%-git}
+  make check
+}
+build() {
+  cd ${srcdir}/${pkgbase%%-git}
+  ./autogen.sh
+  ./configure --prefix=/usr --sbindir=/usr/bin \
+    --without-xenstore \
+    --enable-shared --disable-static
+   make
+}
+
+package_vhostmd() {
+#  install=$pkgname.install
+  cd ${srcdir}/${pkgbase%%-git}
+  make DESTDIR="$pkgdir" install
+  #systemd
+}
+
+# vim:set ts=2 sw=2 et:
