@@ -29,6 +29,7 @@ build() {
   make -C python
   make -C fence_sanlock
   make -C reset
+  make -C tests
 }
 
 package() {
@@ -38,7 +39,7 @@ package() {
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C python install
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C fence_sanlock install
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C reset install
-
+  find tests/ -type f -executable -exec install -DTm 0755 '{}' $pkgdir/usr/share/sanlock/'{}' \;
   #systemd
   install -D -m 0644 init.d/sanlock.service.native $pkgdir/$_systemddir/system/sanlock.service
   install -D -m 0755 init.d/wdmd $pkgdir/$_systemddir/systemd-wdmd
@@ -57,6 +58,7 @@ package() {
   install -Dd -m 0775 $pkgdir/run/fence_sanlock
   install -Dd -m 0775 $pkgdir/run/fence_sanlockd
   install -Dd -m 0775 $pkgdir/run/sanlk-resetd
+
 }
 
 # vim:set ts=2 sw=2 et:
