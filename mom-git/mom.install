@@ -4,7 +4,7 @@
 
 ## arg 1:  the new package version
 post_install() {
-  /bin/systemctl preset momd.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload preset momd.service > /dev/null 2>&1 || :
 }
 
 post_upgrade() {
@@ -13,11 +13,9 @@ post_upgrade() {
 
 ## arg 1:  the old package version
 pre_remove() {
-  /bin/systemctl --no-reload disable momd.service > /dev/null 2>&1 || :
-  /bin/systemctl stop momd.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable --now momd.service > /dev/null 2>&1 || :
 }
 
 ## arg 1:  the old package version
-post_remove() {
-  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-}
+#post_remove() {
+#}

@@ -49,7 +49,7 @@ depends=('dmidecode' \
          'abrt-addon-ccpp' \
          'abrt-addon-python' \
          'curl' \
-         'safelease++>=1.0' \
+         'safelease>=1.0' \
          'mom>=0.5.8' \
          'openvswitch>=2.0.0' \
          'libvirt' \
