@@ -53,7 +53,6 @@ depends=('dmidecode' \
          'mom>=0.5.8' \
          'openvswitch>=2.0.0' \
          'libvirt' \
-         'libvirt-python>=2.2.0-1' \
          'open-iscsi' \
          'sanlock>=3.4.0' \
          'python-sanlock' \
@@ -86,12 +85,12 @@ depends=('dmidecode' \
          'python2-decorator' \
          'libsasl' \
          'inetutils' \
-         'vhostmd' \
          'usbutils' \
          'fcoe-utils' \
          'python-magic' \
-         'python-blivet' \
          'xfsprogs')
+optdepends=('python-blivet: Gluster Plugin for VDSM' \
+            'vhostmd: For interaction with vhostmd')
 provides=('vdsm' 'vdsm-cli' 'vdsm-xmlrpm' 'vdsm-api' 'vdsm-jsonrpc' 'vdsm-yajsonrpc' \ 
           'vdsm-python' 'vdsm-tests' 'vdsm-hook-allocate_net' 'vdsm-hook-checkimages' \
           'vdsm-hook-checkips' 'vdsm-hook-diskunmap' 'vdsm-hook-ethtool-options')
