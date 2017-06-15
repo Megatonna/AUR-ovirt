@@ -1,0 +1,26 @@
+# This is a default template for a post-install scriptlet.
+# Uncomment only required functions and remove any functions
+# you don't need (and this header).
+
+pre_install() {
+getent group ovirt-vmconsole > /dev/null || \
+		groupadd -r ovirt-vmconsole
+getent passwd ovirt-vmconsole >/dev/null || \
+		useradd \
+		-r \
+		-g ovirt-vmconsole \
+		-c "oVirt VM Console" \
+ 		-s /bin/sh \
+		-d /usr/share/ovirt-vmconsole/empty \
+		ovirt-vmconsole
+}
+
+post_install() {
+  /bin/systemctl --no-reload preset ovirt-vmconsole-host-sshd.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload preset ovirt-vmconsole-proxy-sshd.service > /dev/null 2>&1 || :
+}
+
+pre_remove() {
+  /bin/systemctl --no-reload disable --now ovirt-vmconsole-host-sshd.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable --now ovirt-vmconsole-psoxy-sshd.service > /dev/null 2>&1 || :
+}

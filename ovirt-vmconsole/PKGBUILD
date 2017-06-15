@@ -1,0 +1,47 @@
+# Contributor: Andrii Sokolenko
+# Based by Ovirt ovirt-vmconsole.spec.in
+pkgbase=ovirt-vmconsole
+pkgname=('ovirt-vmconsole')
+pkgver=1.0.4
+pkgrel=1
+pkgdesc="oVirt VM console"
+arch=('i686' 'x86_64')
+url="http://www.ovirt.org"
+license=('GPLv3')
+groups=()
+depends=('shadow' 'python-argparse' 'systemd')
+makedepends=('gettext' 'openssh' 'python' 'systemd')
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=()
+source=("https://github.com/oVirt/ovirt-vmconsole/archive/v${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+_systemddir=/usr/lib/systemd
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+  make check
+}
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+  autoreconf -ivf
+  ./configure --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libexecdir=/usr/lib/ovirt-vmconsole \
+    --with-local-version="${pkgbase}-${pkgver}"
+   make
+}
+
+package_ovirt-vmconsole() {
+  install=$pkgname.install
+  cd ${srcdir}/${pkgbase}-${pkgver}
+  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" install
+  #systemd
+  install -D -m 0644 src/ovirt-vmconsole-host/ovirt-vmconsole-host-sshd/ovirt-vmconsole-host-sshd.systemd $pkgdir/$_systemddir/system/ovirt-vmconsole-host-sshd.service
+  install -D -m 0644 src/ovirt-vmconsole-proxy/ovirt-vmconsole-proxy-sshd/ovirt-vmconsole-proxy-sshd.systemd $pkgdir/$_systemddir/system/ovirt-vmconsole-proxy-sshd.service
+
+}
+
+# vim:set ts=2 sw=2 et:
