@@ -36,8 +36,11 @@ depends=('dmidecode' \
          'xz' \
          'iproute2>=3.10.0' \
          'python-yaml' \
+         'python-nose' \
+         'python2-ipaddress' \
          'python-dateutil' \
          'python-netaddr' \
+         'python2-netaddr' \
          'python-pyinotify' \
          'python-cpopen>=1.5' \
          'python-ioprocess>=0.16.1' \
@@ -60,18 +63,13 @@ depends=('dmidecode' \
          'ovirt-imageio-common' \
          'ovirt-imageio-daemon' \
          'ovirt-vmconsole>=1.0.0' \
-         'libvirt-client' \
-         'libvirt-daemon-config-nwfilter' \
-         'libvirt-lock-sanlock' \
-         'libvirt-daemon-kvm' \
-         'libvirt-python>=2.2.0' \
          'systemd' \
          'python>=2.7.3' \
          'e2fsprogs>=1.41.14' \
          'sed>=4.2.1' \
          'ed' \
          'lvm2>=2.02.132' \
-         'qemu-kvm' \
+         'qemu' \
          'glusterfs' \
          'psmisc>=22.6' \
          'bridge-utils' \
@@ -80,7 +78,6 @@ depends=('dmidecode' \
          'dosfstools' \
          'cdrtools' \
          'fence-agents' \
-         'qemu-kvm' \
          'glusterfs' \
          'python2-decorator' \
          'libsasl' \
@@ -88,13 +85,19 @@ depends=('dmidecode' \
          'usbutils' \
          'fcoe-utils' \
          'python-magic' \
-         'xfsprogs')
+         'xfsprogs' \
+         'libselinux')
 optdepends=('python-blivet: Gluster Plugin for VDSM' \
             'vhostmd: For interaction with vhostmd')
 provides=('vdsm' 'vdsm-cli' 'vdsm-xmlrpm' 'vdsm-api' 'vdsm-jsonrpc' 'vdsm-yajsonrpc' \ 
           'vdsm-python' 'vdsm-tests' 'vdsm-hook-allocate_net' 'vdsm-hook-checkimages' \
           'vdsm-hook-checkips' 'vdsm-hook-diskunmap' 'vdsm-hook-ethtool-options')
 
+#         'libvirt-client' \
+#         'libvirt-daemon-config-nwfilter' \
+#         'libvirt-lock-sanlock' \
+#         'libvirt-daemon-kvm' \
+#         'libvirt-python>=2.2.0' \
 # Network-Manager-config-server
 #This configuration file changes NetworkManager's behavior to
 # what's expected on "traditional UNIX server" type deployments.
@@ -117,22 +120,29 @@ replaces=()
 backup=()
 #options=(!emptydirs)
 install=$pkgname.install
-source=('git+https://gerrit.ovirt.org/vdsm')
-sha256sums=('SKIP')
-
+source=('git+https://gerrit.ovirt.org/vdsm'
+        'qemu-kvm.sh')
+sha256sums=('SKIP'
+'1303e42d789b45776ad4d3afa5f8ae8b8e3afc2c0c9e0d8a861b200cf4a3c012')
 _systemddir=/usr/lib/systemd
 
 build() {
   cd ${srcdir}/${pkgname%%-git}
   export PYTHON="$(which python2)"
   sed -ie 's/python-config/python2-config/g' configure.ac
+  sed -ie 's/sysconfig\/libvirtd/conf.d\/libvirtd/g' lib/vdsm/tool/configurators/libvirt.py
   ./autogen.sh
   ./configure --prefix=/usr --libexec=/usr/lib --sysconfdir=/etc \
     --enable-hooks \
+    --enable-python3 \
     --with-smbios-manufacture='oVirt' \
     --with-smbios-osname='oVirt Node' \
     --with-ovirt-vmconsole-user='vdsm' \
     --with-ovirt-vmconsole-group='kvm' \
+    --with-qemu-group='kvm' \
+    --with-libvirt-service-default='/etc/conf.d/libvirtd' \
+    --disable-libvirt-selinux \
+    --disable-libvirt-sanlock \
     --with-data-center='/rhev/data-center'
   make
   # Setting software_version and software_revision in dsaversion.py
@@ -147,6 +157,11 @@ build() {
 
   sed -i -e 's\@VDSMRPCPYLIBDIR@\${_site_dir}/vdsm/rpc\g' lib/vdsm/constants.py
 }
+check() {
+  cd ${srcdir}/${pkgname%%-git}
+#  export PYTHON="$(which python2)"
+#  make check
+}
 
 package() {
   cd ${srcdir}/${pkgname%%-git}
@@ -154,6 +169,7 @@ package() {
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" install
 
   install -dDm 0755 ${pkgdir}/var/log/vdsm
+  install -m 0755 ../qemu-kvm.sh "$pkgdir/usr/bin/qemu-kvm"
   touch ${pkgdir}/var/log/vdsm/{mom.log,supervdsm.log,vdsm.log}
 
   # Install the lvm rules
@@ -164,7 +180,7 @@ package() {
   install -Dm 0644 init/systemd/85-vdsmd.preset ${pkgdir}/${_systemddir}/system-preset/85-vdsmd.preset
 
   install -Dm 0644 init/systemd/vdsm-tmpfiles.d.conf \
-                     ${pkgdir}/etc/tmpfiles.d/vdsm.conf
+                     ${pkgdir}/usr/lib/tmpfiles.d/vdsm.conf
   install -Dm 0644 init/systemd/unlimited-core.conf \
                      ${pkgdir}/etc/systemd/system/libvirtd.service.d/unlimited-core.conf
   install -Dm 0644 vdsm_hooks/fcoe/85-vdsm-hook-fcoe.preset ${pkgdir}/${_systemddir}/system-preset/

@@ -58,11 +58,11 @@ post_upgrade() {
 ## arg 1:  the old package version
 pre_remove() {
   /bin/vdsm-tool remove-config
-  /bin/systemctl --no-reload disable vdsmd.service supervdsmd.service \ 
-		vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
-  /bin/systemctl stop vdsmd.service supervdsmd.service \ 
-		vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
-  /bin/systemctl --no-reload disable vdsm-checkips.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable --now vdsmd.service supervdsmd.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable --now vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+  /bin/systemctl stop vdsmd.service supervdsmd.service > /dev/null 2>&1 || : 
+  /bin/systemctl stop vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable --now vdsm-checkips.service > /dev/null 2>&1 || :
   /bin/systemctl stop vdsm-checkips.service > /dev/null 2>&1 || : 
  }
 
