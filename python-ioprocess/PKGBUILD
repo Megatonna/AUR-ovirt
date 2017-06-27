@@ -1,7 +1,7 @@
 # Contributor: Andrii Sokolenko
 # Based by Ovirt ioprocess.spec
 pkgbase=(ioprocess-git)
-pkgname=(python-ioprocess)
+pkgname=(python2-ioprocess)
 pkgver=0.17.gite82786d
 pkgrel=1
 pkgdesc="Slave process to perform risky IO"
@@ -12,7 +12,7 @@ groups=()
 conflicts=()
 replaces=()
 backup=()
-depends=('yajl' 'python3')
+depends=('yajl' 'python2')
 checkdepends=('python-tox')
 provides=()
 options=(!emptydirs)
@@ -31,13 +31,13 @@ check() {
 }
 build() {
   cd ${srcdir}/${pkgbase%%-git}
-  export PYTHON=$(which python3) 
+  export PYTHON=$(which python2) 
   ./autogen.sh
   ./configure --prefix=/usr --libexec=/usr/lib/ioprocess/
   make
 }
 
-package_python-ioprocess() {
+package_python2-ioprocess() {
   cd ${srcdir}/${pkgbase%%-git}
   make DESTDIR=${pkgdir} install
 }

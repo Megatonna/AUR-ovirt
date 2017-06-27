@@ -52,8 +52,8 @@ package_ovirt-imageio-daemon() {
   install=$pkgname.install
   cd ${srcdir}/${pkgbase}-${pkgver}/daemon
   python setup.py install -O1 --root="$pkgdir" --prefix=/usr
-  install -D -m 0755 --directory ${pkgdir}/var/log
-  touch ${pkgdir}/var/log/daemon.log
+  install -D -m 0755 --directory ${pkgdir}/var/log/ovirt-imageio-daemon
+  touch ${pkgdir}/var/log/ovirt-imageio-daemon/daemon.log
   install -D -m 0755 --directory ${pkgdir}/etc/ovirt-imageio-daemon
   install -D -m 0644 data/logger.conf ${pkgdir}/etc/ovirt-imageio-daemon
   install -D -m 0644 data/ovirt-imageio-daemon.service ${pkgdir}${_systemddir}/system/ovirt-imageio-daemon.service

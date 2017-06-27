@@ -2,7 +2,7 @@
 # Contributor: Andrii Sokolenko
 # Based by fedora sanlock.spec
 pkgbase=sanlock-git
-pkgname=('sanlock' 'python-sanlock')
+pkgname=('sanlock' 'python2-sanlock')
 pkgver=3.5.0
 pkgrel=1
 pkgdesc="Shared storage lock manager (with Python bindings)"
@@ -27,15 +27,17 @@ build() {
   cd "$srcdir/${pkgbase%%-git}"
   make -C wdmd
   make -C src
-  make -C python
+  cd python
+  python2 setup.py build
+  cd ..
   make -C fence_sanlock
   make -C reset
   make -C tests
 }
-package_python-sanlock() {
-  depends=('python3' 'sanlock')
-  cd "$srcdir/${pkgbase%%-git}"
-  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C python install
+package_python2-sanlock() {
+  depends=('python2' 'sanlock')
+  cd "$srcdir/${pkgbase%%-git}/python"
+  python2 setup.py install --root=${pkgdir} --prefix=/usr
 }
 package_sanlock() {
   install=$pkgname.install
