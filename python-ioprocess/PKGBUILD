@@ -15,25 +15,23 @@ backup=()
 depends=('yajl' 'python2')
 checkdepends=('python-tox')
 provides=()
-options=(!emptydirs)
+#options=(!emptydirs)
 install=()
 source=('git+https://gerrit.ovirt.org/p/ioprocess.git')
 sha256sums=('SKIP')
 prepare() {
-    grep -Rle "#\!/usr/bin/python" * | xargs -r sed -ie 's/#!\/usr\/bin\/\bpython\b/\#!\/usr\/bin\/python2/g'
-    grep -Rle "/usr/bin/env python" * | xargs -r sed -ie 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
     cd ${srcdir}/${pkgbase%%-git}/bindings/python
-    sed -ie 's/python3.5/python3/g' tox.ini
+    sed -i'' -e 's/python3.5/python3/g' tox.ini
 }
 check() {
     cd ${srcdir}/${pkgbase%%-git}/bindings/python
-    tox
+    LC_CTYPE=en_US.UTF-8 tox
 }
 build() {
   cd ${srcdir}/${pkgbase%%-git}
   export PYTHON=$(which python2) 
   ./autogen.sh
-  ./configure --prefix=/usr --libexec=/usr/lib/ioprocess/
+  ./configure --prefix=/usr --libexec=/usr/lib/ioprocess/ --sbindir=/usr/bin --sysconfdir=/etc --localstatedir=/var
   make
 }
 

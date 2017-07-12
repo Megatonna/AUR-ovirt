@@ -15,12 +15,18 @@ pre_install() {
 		            -s /sbin/nologin -c "Node Virtualization Manager" ${_vdsm_user}
 	/usr/sbin/usermod -a -G ${_qemu_group},${_snlk_group} ${_vdsm_user}
 	/usr/sbin/usermod -a -G ${_cdrom_group} ${_qemu_user}
+
 }
 post_install() {
 	touch /var/log/vdsm/{mom.log,supervdsm.log,vdsm.log}
 	chmod 0644 /var/log/vdsm/{mom.log,supervdsm.log,vdsm.log}
 	chown vdsm:kvm /var/log/vdsm/{mom.log,vdsm.log}
+	chown vdsm:kvm /etc/pki/vdsm/keys/libvirt_password
+	chown -R vdsm:kvm /var/lib/vdsm
+	chown -R vdsm:kvm /var/lib/libvirt
+	chown -R vdsm:kvm /rhev/
 	chown root:root /var/log/vdsm/supervdsm.log
+	echo 'export OTOPI_PYTHON="/usr/bin/python2"' > /etc/otopi.env.d/python.env
 	systemd-tmpfiles --create vdsm.conf
 	/bin/systemctl restart systemd-modules-load.service >/dev/null 2>&1 || :
 	/bin/systemctl preset vdsmd.service supervdsmd.service vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :

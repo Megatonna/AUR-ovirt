@@ -1,0 +1,15 @@
+--- pthreading.py.orig	2017-06-27 16:46:27.726694719 +0300
++++ pthreading.py	2017-06-23 19:23:36.395317942 +0300
+@@ -181,7 +181,12 @@ def monkey_patch():
+ 
+     if _is_monkey_patched:
+         return
++    if 'threading' in sys.modules:
++            del sys.modules['threading']
+ 
++    if 'thread' in sys.modules:
++            del sys.modules['thread']
++    
+     if 'thread' in sys.modules or 'threading' in sys.modules:
+         # If thread was imported, some module may be using now the original
+         # thread.allocate_lock. If threading was imported, it is already using

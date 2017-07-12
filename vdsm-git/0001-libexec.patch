@@ -1,0 +1,66 @@
+--- lib/vdsm/network/configurators/ifcfg.py.orig	2017-07-12 02:10:24.605127293 +0300
++++ lib/vdsm/network/configurators/ifcfg.py	2017-07-12 02:11:19.245130225 +0300
+@@ -456,8 +456,8 @@
+     @classmethod
+     def _persistentBackup(cls, filename):
+         """ Persistently backup ifcfg-* config files """
+-        if os.path.exists('/usr/libexec/ovirt-functions'):
+-            cmd.exec_sync([constants.EXT_SH, '/usr/libexec/ovirt-functions',
++        if os.path.exists('/usr/lib/ovirt-functions'):
++            cmd.exec_sync([constants.EXT_SH, '/usr/lib/ovirt-functions',
+                            'unmount_config', filename])
+             logging.debug("unmounted %s using ovirt", filename)
+ 
+--- ./lib/vdsm/virt/libvirt-hook.sh.orig	2017-07-12 02:14:51.508474951 +0300
++++ ./lib/vdsm/virt/libvirt-hook.sh	2017-07-12 02:15:09.208475903 +0300
+@@ -17,5 +17,5 @@
+ 
+ # Fix VMs migrating to host with libvirt >= 1.2.8
+ # See https://bugzilla.redhat.com/show_bug.cgi?id=1138340
+-sed -e 's|<min_guarantee[^>]*>[0-9 ]*</min_guarantee>||g' | /usr/libexec/vdsm/vm_migrate_hook.py $DOMAIN $EVENT $PHASE
++sed -e 's|<min_guarantee[^>]*>[0-9 ]*</min_guarantee>||g' | /usr/lib/vdsm/vm_migrate_hook.py $DOMAIN $EVENT $PHASE
+ 
+--- lib/vdsm/storage/fallocate.py.orig	2017-07-12 02:13:35.668470881 +0300
++++ lib/vdsm/storage/fallocate.py	2017-07-12 02:13:55.095138590 +0300
+@@ -26,7 +26,7 @@
+ 
+ from vdsm.storage import operation
+ 
+-_FALLOCATE = "/usr/libexec/vdsm/fallocate"
++_FALLOCATE = "/usr/lib/vdsm/fallocate"
+ 
+ 
+ def allocate(image, size, offset=0):
+--- ./static/etc/sudoers.d/50_vdsm.in.orig	2017-07-12 02:17:56.118484859 +0300
++++ ./static/etc/sudoers.d/50_vdsm.in	2017-07-12 02:18:14.091819158 +0300
+@@ -9,7 +9,7 @@
+     @CHOWN_PATH@ @METADATAUSER@\:@METADATAGROUP@ *, \
+     @ISCSIADM_PATH@ *, \
+     @LVM_PATH@, \
+-    @SETSID_PATH@ @IONICE_PATH@ -c ? -n ? @SU_PATH@ vdsm -s /bin/sh -c /usr/libexec/vdsm/spmprotect.sh*, \
++    @SETSID_PATH@ @IONICE_PATH@ -c ? -n ? @SU_PATH@ vdsm -s /bin/sh -c /usr/lib/vdsm/spmprotect.sh*, \
+     @SERVICE_PATH@ vdsmd *, \
+     @REBOOT_PATH@ -f
+ 
+--- ./vdsm_hooks/localdisk/after_disk_prepare.orig	2017-07-12 02:22:23.781832560 +0300
++++ ./vdsm_hooks/localdisk/after_disk_prepare	2017-07-12 02:22:39.208500056 +0300
+@@ -38,7 +38,7 @@
+ LOCAL_POOL = "pool0"
+ 
+ # Helper to execute LVM command as super user
+-HELPER = "/usr/libexec/vdsm/localdisk-helper"
++HELPER = "/usr/lib/vdsm/localdisk-helper"
+ 
+ # The LV/local disk is created with the UPDATING tag.
+ # This tag will be cleared, once the copying of the data from the template
+--- ./init/vdsmd_init_common.sh.in.orig	2017-07-12 02:24:43.475173392 +0300
++++ ./init/vdsmd_init_common.sh.in	2017-07-12 02:25:05.595174580 +0300
+@@ -36,7 +36,7 @@
+ }
+ 
+ task_configure_coredump() {
+-    echo "|/usr/libexec/abrt-hook-ccpp %s %c %p %u %g %t %e %i" > /proc/sys/kernel/core_pattern
++    echo "|/usr/lib/abrt/abrt-hook-ccpp %s %c %p %u %g %t %e %i" > /proc/sys/kernel/core_pattern
+ }
+ 
+ task_configure_vdsm_logs() {

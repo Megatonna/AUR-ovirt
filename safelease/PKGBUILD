@@ -15,7 +15,7 @@ provides=()
 conflicts=()
 replaces=()
 backup=()
-options=(!emptydirs)
+#options=(!emptydirs)
 install=()
 source=('git+https://gerrit.ovirt.org/safelease.git')
 sha256sums=('SKIP')
@@ -29,7 +29,7 @@ check() {
 build() {
   cd ${srcdir}/${pkgbase%%-git}
   ./autogen.sh --system
-  ./configure --prefix=/usr --libexecdir=/usr/lib/
+  ./configure --prefix=/usr --libexecdir=/usr/lib/ --sbindir=/usr/bin --sysconfdir=/etc --localstatedir=/var
    make
 }
 

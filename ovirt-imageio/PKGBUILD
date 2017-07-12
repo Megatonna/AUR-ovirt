@@ -9,20 +9,23 @@ arch=('i686' 'x86_64')
 url="https://gerrit.ovirt.org/ovirt-imageio"
 license=('GPLv2+')
 groups=()
-depends=('python')
-makedepends=('python' 'systemd')
+depends=('python2')
+makedepends=('python2' 'python2-systemd')
 provides=()
 conflicts=()
 replaces=()
 backup=()
-options=(!emptydirs)
+#options=(!emptydirs)
 install=()
-checkdepends=('python-tox' 'python-pytest' 'flake8')
+checkdepends=('python2-tox' 'python2-pytest' 'flake8')
 source=("https://github.com/oVirt/ovirt-imageio/archive/v${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
 _systemddir=/usr/lib/systemd
-
+prepare() {
+  grep -Rle "#\!/usr/bin/python" * | xargs -r sed -i'' -e 's/#!\/usr\/bin\/\bpython\b/\#!\/usr\/bin\/python2/g'                                      
+  grep -Rle "/usr/bin/env python" * | xargs -r sed -i'' -e 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
+}
 check() {
   cd ${srcdir}/${pkgbase}-${pkgver}
 #  cd common
@@ -44,16 +47,15 @@ package_ovirt-imageio-common() {
   pkgdesc="Common library for use in oVirt image transfer daemon and proxy"
   depends=('python' 'python-six' 'python-webob')
   cd ${srcdir}/${pkgbase}-${pkgver}/common/
-  python setup.py install -O1 --root="$pkgdir" --prefix=/usr
+  python2 setup.py install -O1 --root="$pkgdir" --prefix=/usr
 }
 package_ovirt-imageio-daemon() {
   pkgdesc="Daemon to manage image data transfer on oVirt virtualization hosts."
   depends=('ovirt-imageio-common' 'python-systemd' 'python-six')
   install=$pkgname.install
   cd ${srcdir}/${pkgbase}-${pkgver}/daemon
-  python setup.py install -O1 --root="$pkgdir" --prefix=/usr
+  python2 setup.py install -O1 --root="$pkgdir" --prefix=/usr
   install -D -m 0755 --directory ${pkgdir}/var/log/ovirt-imageio-daemon
-  touch ${pkgdir}/var/log/ovirt-imageio-daemon/daemon.log
   install -D -m 0755 --directory ${pkgdir}/etc/ovirt-imageio-daemon
   install -D -m 0644 data/logger.conf ${pkgdir}/etc/ovirt-imageio-daemon
   install -D -m 0644 data/ovirt-imageio-daemon.service ${pkgdir}${_systemddir}/system/ovirt-imageio-daemon.service

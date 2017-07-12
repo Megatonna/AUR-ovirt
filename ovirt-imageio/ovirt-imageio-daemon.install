@@ -3,7 +3,15 @@
 # you don't need (and this header).
 
 ## arg 1:  the new package version
+pre_install() {
+  export LC_ALL=C                          
+  /usr/bin/getent passwd vdsm >/dev/null || \
+	  /usr/sbin/useradd -r -u 36 -g kvm -d /var/lib/vdsm \
+	  -s /sbin/nologin -c "Node Virtualization Manager" vdsm 
+}
 post_install() {
+  touch ${pkgdir}/var/log/ovirt-imageio-daemon/daemon.log
+  chown vdsm:kvm ${pkgdir}/var/log/ovirt-imageio-daemon/daemon.log
   /bin/systemctl --no-reload ovirt-imageio-daemon.service > /dev/null 2>&1 || :
 }
 

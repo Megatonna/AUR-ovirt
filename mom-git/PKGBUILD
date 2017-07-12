@@ -24,8 +24,7 @@ _systemddir=/usr/lib/systemd
 
 prepare() {
   cd ${srcdir}/${pkgbase%%-git}
-  grep -Rle "/usr/bin/env python" * | xargs -r sed -ie 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
-
+  grep -Rle "/usr/bin/env python" * | xargs -r sed -i'' -e 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
 }
 check() {
   cd ${srcdir}/${pkgbase%%-git}
@@ -35,14 +34,14 @@ build() {
   cd ${srcdir}/${pkgbase%%-git}
   export PYTHON="$(which python2)"
   ./autogen.sh
-  ./configure --prefix=/usr --sbindir=/usr/bin
+  ./configure --prefix=/usr --sbindir=/usr/bin --libexec=/usr/lib --sysconfdir=/etc --localstatedir=/var
    make
 }
 
 package_mom() {
   install=$pkgname.install
   cd ${srcdir}/${pkgbase%%-git}
-  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" install
+  make DESTDIR="$pkgdir" install
   #systemd
   install -D -m 0644 contrib/momd.service $pkgdir/$_systemddir/system/momd.service
   install -D -m 0644 doc/mom-balloon+ksm.conf $pkgdir/etc/momd.conf
