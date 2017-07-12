@@ -22,6 +22,7 @@ makedepends=('openssl' \
              'libtool')
 #libguestfs - virt-v2v
 depends=('dmidecode' \
+         'x86_energy_perf_policy' # modprobe msr,cpuid? \
          'python2-dmidecode' \
          'libguestfs' \
          'chrony' \
