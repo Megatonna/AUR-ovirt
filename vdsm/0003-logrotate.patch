@@ -1,0 +1,10 @@
+--- init/systemd/85-vdsmd.preset	2017-07-20 17:16:17.194721201 +0300
++++ init/systemd/85-vdsmd.preset	2017-07-20 17:16:49.114722905 +0300
+@@ -2,6 +2,7 @@
+ # hypervisor operations
+ 
+ enable vdsmd.service
++enable vdsm-logrotate.timer
+ enable supervdsmd.service
+ enable vdsm-network.service
+ enable vdsm-network-init.service

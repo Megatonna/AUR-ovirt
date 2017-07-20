@@ -120,9 +120,9 @@ backup=()
 #options=(!emptydirs)
 install=$pkgname.install
 source=("https://github.com/oVirt/vdsm/archive/v${pkgver}.tar.gz"
- '0001-libexec.patch' '0002-Makefile.patch'
+ '0001-libexec.patch' '0002-Makefile.patch' 'vdsm-logrotate.timer' 'vdsm-logrotate.service' '0003-logrotate.patch'
  'qemu-kvm.sh')
-sha256sums=('SKIP' 'SKIP' 'SKIP'
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP'
 '1303e42d789b45776ad4d3afa5f8ae8b8e3afc2c0c9e0d8a861b200cf4a3c012')
 _systemddir=/usr/lib/systemd
 
@@ -136,6 +136,7 @@ prepare() {
   sed -i'' -e 's/PYTHONPATH=/PYTHONPATH=$(PYTHONPATH):/g' lib/vdsm/api/Makefile.am
   patch -Np0 -i ../0001-libexec.patch
   patch -Np0 -i ../0002-Makefile.patch
+  patch -Np0 -i ../0003-logrotate.patch
 }
 build() {
   cd ${srcdir}/${pkgname}-${pkgver}
@@ -193,6 +194,9 @@ package() {
   #systemd
   install -Dm 0644 init/systemd/85-vdsmd.preset ${pkgdir}/${_systemddir}/system-preset/85-vdsmd.preset
   install -Dm 0755 init/systemd/systemd-vdsmd ${pkgdir}/${_systemddir}/systemd-vdsmd
+  install -Dm 0644 ../vdsm-logrotate.timer ${pkgdir}/${_systemddir}/system/vdsm-logrotate.timer
+  install -Dm 0644 ../vdsm-logrotate.service ${pkgdir}/${_systemddir}/system/vdsm-logrotate.service
+  
   install -Dm 0644 init/systemd/vdsm-tmpfiles.d.conf \
                      ${pkgdir}/usr/lib/tmpfiles.d/vdsm.conf
   install -Dm 0644 init/systemd/unlimited-core.conf \
@@ -205,7 +209,9 @@ package() {
 # Install the libvirt hook for cleaning up the XML
   install -Dm 0755 vdsm/virt/libvirt-hook.sh \
                    ${pkgdir}/etc/libvirt/hooks/qemu
+  mv ${pkgdir}/etc/cron.hourly/vdsm-logrotate ${pkgdir}/usr/lib/vdsm/
   mv ${pkgdir}/var/run ${pkgdir}/run
+  rm -rf ${pkgdir}/etc/cron*
 }
 
 # vim:set ts=2 sw=2 et:
