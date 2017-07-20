@@ -1,6 +1,5 @@
 # Contributor: Andrii Sokolenko
 # Based by Ovirt safelease.spec
-pkgbase=safelease-git
 pkgname=('safelease')
 pkgver=1.0.gitd7fca0
 pkgrel=1
@@ -9,7 +8,7 @@ arch=('i686' 'x86_64')
 url="http://www.ovirt.org/Safelease"
 license=('GPLv2+')
 groups=()
-depends=('python-dmidecode' 'libguestfs')
+depends=('python2-dmidecode' 'libguestfs')
 makedepends=('autoconf' 'automake')
 provides=()
 conflicts=()
@@ -17,24 +16,24 @@ replaces=()
 backup=()
 #options=(!emptydirs)
 install=()
-source=('git+https://gerrit.ovirt.org/safelease.git')
+source=('git+https://gerrit.ovirt.org/safelease.git#commit=d7fca0b8d410cb8963edb28b2f94ac7eeb199580')
 sha256sums=('SKIP')
 
 _systemddir=/usr/lib/systemd
 
 check() {
-  cd ${srcdir}/${pkgbase%%-git}
+  cd ${srcdir}/${pkgname}
   make check
 }
 build() {
-  cd ${srcdir}/${pkgbase%%-git}
+  cd ${srcdir}/${pkgname}
   ./autogen.sh --system
   ./configure --prefix=/usr --libexecdir=/usr/lib/ --sbindir=/usr/bin --sysconfdir=/etc --localstatedir=/var
    make
 }
 
-package_safelease() {
-  cd ${srcdir}/${pkgbase%%-git}
+package() {
+  cd ${srcdir}/${pkgname}
   make DESTDIR="$pkgdir" install
 }
 
