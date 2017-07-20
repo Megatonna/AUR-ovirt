@@ -1,9 +1,8 @@
 # Contributor: Johannes Dewender  arch at JonnyJD dot net
 # Contributor: Andrii Sokolenko
 # Based by fedora sanlock.spec
-pkgbase=sanlock-git
-pkgname=('sanlock' 'python2-sanlock')
-pkgver=3.5.0
+pkgname=('sanlock')
+pkgver=3.5.0.gitc749a1b
 pkgrel=1
 pkgdesc="Shared storage lock manager (with Python bindings)"
 arch=('i686' 'x86_64')
@@ -12,57 +11,58 @@ license=('GPL')
 groups=()
 depends=('systemd' 'libaio' 'libutil-linux')
 makedepends=('')
-provides=()
+provides=('python2-sanlock')
 conflicts=()
 replaces=()
 backup=()
-options=(!emptydirs)
+#options=(!emptydirs)
 install=()
-source=('git+https://pagure.io/sanlock.git')
+source=('git+https://pagure.io/sanlock.git#commit=c749a1bd84a74afd9a3f2cb8820f38fdbc66c383')
 sha256sums=('SKIP')
 
 _systemddir=/usr/lib/systemd
 
+prepare() {
+  cd ${srcdir}/${pkgname}
+  sed -i'' -e "s|\bpython \b|python2 |g" python/Makefile
+  sed -i'' -e "s/sysconfig/conf\.d/g" -e "s|\. /etc/rc\.d|#\. /etc/rc\.d|g" init.d/wdmd
+  sed -i'' -e "s/sysconfig/conf\.d/g" init.d/fence_sanlockd
+}
 build() {
-  cd "$srcdir/${pkgbase%%-git}"
+  cd "${srcdir}/${pkgname}"
   make -C wdmd
   make -C src
-  cd python
-  python2 setup.py build
-  cd ..
-  make -C fence_sanlock
+  make -C python
+#  make -C fence_sanlock
   make -C reset
   make -C tests
 }
-package_python2-sanlock() {
-  depends=('python2' 'sanlock')
-  cd "$srcdir/${pkgbase%%-git}/python"
-  python2 setup.py install --root=${pkgdir} --prefix=/usr
-}
-package_sanlock() {
+package() {
   install=$pkgname.install
-  cd "$srcdir/${pkgbase%%-git}"
+  cd "${srcdir}/${pkgname}"
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C src install
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C wdmd install
-  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C fence_sanlock install
+#  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C fence_sanlock install
   make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C reset install
+  make DESTDIR="$pkgdir" LIBDIR="/usr/lib" BINDIR="/usr/bin" -C python install
+  
   find tests/ -type f -executable -exec install -DTm 0755 '{}' $pkgdir/usr/share/sanlock/'{}' \;
   #systemd
   install -D -m 0644 init.d/sanlock.service.native $pkgdir/$_systemddir/system/sanlock.service
-  install -D -m 0755 init.d/wdmd $pkgdir/$_systemddir/systemd-wdmd
   install -D -m 0644 init.d/wdmd.service.native $pkgdir/$_systemddir/system/wdmd.service
-  install -D -m 0755 init.d/fence_sanlockd $pkgdir/$_systemddir/systemd-fence_sanlockd
-  install -D -m 0644 init.d/fence_sanlockd.service $pkgdir/$_systemddir/system/fence_sanlockd.service
+#  install -D -m 0644 init.d/fence_sanlockd.service $pkgdir/$_systemddir/system/fence_sanlockd.service
   install -D -m 0644 init.d/sanlk-resetd.service $pkgdir/$_systemddir/system/sanlk-resetd.service
+  install -D -m 0755 init.d/wdmd $pkgdir/$_systemddir/systemd-wdmd
+#  install -D -m 0755 init.d/fence_sanlockd $pkgdir/$_systemddir/systemd-fence_sanlockd
 
   install -D -m 0644 src/logrotate.sanlock $pkgdir/etc/logrotate.d/sanlock
   install -D -m 0644 src/sanlock.conf $pkgdir/etc/sanlock/sanlock.conf
-  install -D -m 0644 init.d/wdmd.sysconfig $pkgdir/etc/sysconfig/wdmd
+  install -D -m 0644 init.d/wdmd.sysconfig $pkgdir/etc/conf.d/wdmd
 
   install -Dd -m 0755 $pkgdir/etc/wdmd.d
   install -Dd -m 0775 $pkgdir/run/sanlock
   install -Dd -m 0775 $pkgdir/run/fence_sanlock
-  install -Dd -m 0775 $pkgdir/run/fence_sanlockd
+#  install -Dd -m 0775 $pkgdir/run/fence_sanlockd
   install -Dd -m 0775 $pkgdir/run/sanlk-resetd
 }
 

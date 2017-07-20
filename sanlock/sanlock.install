@@ -19,13 +19,13 @@ post_install() {
   /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 }
 
-post_upgrade() {
-  /bin/systemctl try-restart fence_sanlockd.service > /dev/null 2>&1 || :
-}
+#post_upgrade() {
+#  /bin/systemctl try-restart fence_sanlockd.service > /dev/null 2>&1 || :
+#}
 
 pre_remove() {
   /bin/systemctl --no-reload disable --now wdmd.service > /dev/null 2>&1 || :
   /bin/systemctl --no-reload disable --now sanlock.service > /dev/null 2>&1 || :
-  /bin/systemctl --no-reload fence_sanlockd.service > /dev/null 2>&1 || :
+#  /bin/systemctl --no-reload fence_sanlockd.service > /dev/null 2>&1 || :
 }
 
