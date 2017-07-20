@@ -1,8 +1,7 @@
 # Contributor: Andrii Sokolenko
 # Based by Ovirt mom.spec
-pkgbase=mom-git
 pkgname=('mom')
-pkgver=0.5.10.dfea878
+pkgver=0.5.10
 pkgrel=1
 pkgdesc="Dynamically manage system resources on virtualization hosts"
 arch=('i686' 'x86_64')
@@ -15,32 +14,32 @@ provides=()
 conflicts=()
 replaces=()
 backup=()
-options=(!emptydirs)
+#options=(!emptydirs)
 install=()
-source=('git+https://gerrit.ovirt.org/mom.git')
+source=("https://github.com/oVirt/mom/archive/v${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
 _systemddir=/usr/lib/systemd
 
 prepare() {
-  cd ${srcdir}/${pkgbase%%-git}
+  cd ${srcdir}/${pkgname}-${pkgver}
   grep -Rle "/usr/bin/env python" * | xargs -r sed -i'' -e 's/\/usr\/bin\/env \bpython\b/\/usr\/bin\/env python2/g'
 }
 check() {
-  cd ${srcdir}/${pkgbase%%-git}
+  cd ${srcdir}/${pkgname}-${pkgver}
   make check
 }
 build() {
-  cd ${srcdir}/${pkgbase%%-git}
+  cd ${srcdir}/${pkgname}-${pkgver}
   export PYTHON="$(which python2)"
   ./autogen.sh
   ./configure --prefix=/usr --sbindir=/usr/bin --libexec=/usr/lib --sysconfdir=/etc --localstatedir=/var
    make
 }
 
-package_mom() {
+package() {
   install=$pkgname.install
-  cd ${srcdir}/${pkgbase%%-git}
+  cd ${srcdir}/${pkgname}-${pkgver}
   make DESTDIR="$pkgdir" install
   #systemd
   install -D -m 0644 contrib/momd.service $pkgdir/$_systemddir/system/momd.service
