@@ -4,7 +4,7 @@
 _vdsm_user='vdsm'
 _vdsm_group='kvm'
 _qemu_group='kvm'
-_qemu_user='vdsm'
+_qemu_user='nobody'
 _snlk_group='sanlock'
 _cdrom_group='optical'
 
@@ -33,6 +33,7 @@ post_install() {
 	/bin/systemctl preset dev-hugepages1G.mount > /dev/null 2>&1 || :
 	/bin/systemctl preset vdsm-checkips.service > /dev/null 2>&1 || :
 	/bin/systemctl preset lldpad.service fcoe.service > /dev/null 2>&1 || :
+	/bin/systemctl preset vdsm-logrotate.service vdsm-logrotate.timer > /dev/null 2>&1 || :
 	/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 }
 
