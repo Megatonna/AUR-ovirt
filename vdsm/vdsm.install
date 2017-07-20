@@ -30,6 +30,7 @@ post_install() {
 	systemd-tmpfiles --create vdsm.conf
 	/bin/systemctl restart systemd-modules-load.service >/dev/null 2>&1 || :
 	/bin/systemctl preset vdsmd.service supervdsmd.service vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+	/bin/systemctl preset dev-hugepages1G.mount > /dev/null 2>&1 || :
 	/bin/systemctl preset vdsm-checkips.service > /dev/null 2>&1 || :
 	/bin/systemctl preset lldpad.service fcoe.service > /dev/null 2>&1 || :
 	/bin/systemctl daemon-reload >/dev/null 2>&1 || :
@@ -66,6 +67,7 @@ pre_remove() {
   /bin/vdsm-tool remove-config
   /bin/systemctl --no-reload disable --now vdsmd.service supervdsmd.service > /dev/null 2>&1 || :
   /bin/systemctl --no-reload disable --now vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
+  /bin/systemctl --no-reload disable --now dev-hugepages1G.mount /dev/null 2>&1 || :
   /bin/systemctl stop vdsmd.service supervdsmd.service > /dev/null 2>&1 || : 
   /bin/systemctl stop vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :
   /bin/systemctl --no-reload disable --now vdsm-checkips.service > /dev/null 2>&1 || :

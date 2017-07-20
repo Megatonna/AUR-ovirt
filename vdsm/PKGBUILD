@@ -1,7 +1,7 @@
 # Contributor: Andrii Sokolenko
 # Based by Ovirt repo fc25 vdsm.spec
-pkgname=vdsm-git
-pkgver=4.20.1.178.ga236be5b35
+pkgname=vdsm
+pkgver=4.20.1
 pkgrel=1
 pkgdesc="Virtual Desktop Server Manager"
 arch=('i686' 'x86_64')
@@ -9,13 +9,12 @@ url="https://www.ovirt.org/develop/developer-guide/vdsm/vdsm/"
 license=('GPLv2+')
 groups=()
 makedepends=('openssl' \
-             'python' \
+             'python2' \
              'python2-cpopen' \
              'python2-six>=1.9.0' \
              'python2-dateutil' \
              'python2-yaml' \
-             'python2'
-             'systemd' \
+             'python2-systemd' \
              'autoconf' \
              'automake' \
              'gettext' \
@@ -25,6 +24,7 @@ depends=('dmidecode' \
          'x86_energy_perf_policy' # modprobe msr,cpuid? \
          'python2-dmidecode' \
          'libguestfs' \
+         'polkit' \
          'chrony' \
          'dhclient' \
          'python2-dbus' \
@@ -119,61 +119,67 @@ replaces=()
 backup=()
 #options=(!emptydirs)
 install=$pkgname.install
-source=('git+https://gerrit.ovirt.org/vdsm' '0001-libexec.patch'
-        'qemu-kvm.sh')
-sha256sums=('SKIP' 'SKIP'
+source=("https://github.com/oVirt/vdsm/archive/v${pkgver}.tar.gz"
+ '0001-libexec.patch' '0002-Makefile.patch'
+ 'qemu-kvm.sh')
+sha256sums=('SKIP' 'SKIP' 'SKIP'
 '1303e42d789b45776ad4d3afa5f8ae8b8e3afc2c0c9e0d8a861b200cf4a3c012')
 _systemddir=/usr/lib/systemd
-pkgver() {
-  cd "${srcdir}/${pkgname%%-git}"                                                                                                                
-  git describe --long --tags | sed 's/^v//; s/-/./g' 
-}
 
 prepare() {
-  cd ${srcdir}/${pkgname%%-git}
+  cd ${srcdir}/${pkgname}-${pkgver}
+  echo v${pkgver} > VERSION
   grep -Rle "#\!/usr/bin/python" * | xargs -r sed -i'' -e 's/#!\/usr\/bin\/\bpython\b/\#!\/usr\/bin\/python2/g'
   sed -i'' -e 's/python-config/python2-config/g' -e 's|/libexec/|/lib/|g' configure.ac
   sed -i'' -e 's/sysconfig\/libvirtd/conf.d\/libvirtd/g' lib/vdsm/tool/configurators/libvirt.py
   sed -i'' -e 's/iscsid.service/open-iscsi.service/g' static/usr/lib/systemd/system/vdsmd.service.in
   sed -i'' -e 's/PYTHONPATH=/PYTHONPATH=$(PYTHONPATH):/g' lib/vdsm/api/Makefile.am
   patch -Np0 -i ../0001-libexec.patch
+  patch -Np0 -i ../0002-Makefile.patch
 }
 build() {
-  cd ${srcdir}/${pkgname%%-git}
+  cd ${srcdir}/${pkgname}-${pkgver}
   export PYTHON="$(which python2)"
-   ./autogen.sh
+  autoreconf -if 
   ./configure --prefix=/usr --libexec=/usr/lib --sysconfdir=/etc --sbindir=/usr/bin --localstatedir=/var \
     --enable-hooks \
-    --enable-python3 \
+    --disable-python3 \
     --with-smbios-manufacturer='oVirt' \
     --with-smbios-osname='oVirt Node' \
     --with-ovirt-vmconsole-user='vdsm' \
     --with-ovirt-vmconsole-group='kvm' \
     --with-qemu-group='kvm' \
     --with-libvirt-service-default='/etc/conf.d/libvirtd' \
+    --disable-openvswitch \
+    --disable-ovirt-imageio \
+    --disable-ovirt-vmconsole \
+    --disable-vhostmd \
+    --disable-containers \
     --disable-libvirt-selinux \
     --disable-libvirt-sanlock \
     --disable-gluster-mgmt \
-    --with-data-center='/rhev/data-center'
+    --with-data-center='/ovirt/data-center'
   make
   # Setting software_version and software_revision in dsaversion.py
   _baserelease=`echo "$pkgver" | sed 's/\([0-9]\+\(\.[0-9]\+\)\?\).*/\1/'`
 #  _baseversion=`echo "%{version}" | sed 's/\([0-9]\+\(\.[0-9]\+\)\?\).*/\1/'`
   _baseversion=$_baserelease
   _rawversion=$pkgver-$pkgrel
+  _site_dir=`$PYTHON -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
   sed -i -e 's/^software_version =.*/software_version = "'"${_baseversion}"'"/' \
            -e 's/^raw_version_revision =.*/raw_version_revision = "'"${_rawversion}"'"/' \
                   -e 's/^software_revision =.*/software_revision = "'"${_baserelease}"'"/' lib/vdsm/dsaversion.py
+  sed -i -e 's|@VDSMRPCPYLIBDIR@|'"${_site_dir}/vdsm/rpc"'|g' lib/vdsm/constants.py
 }
 
 check() {
-  cd ${srcdir}/${pkgname%%-git}
+  cd ${srcdir}/${pkgname}-${pkgver}
 #  export PYTHON="$(which python2)"
 #  make check
 }
 
 package() {
-  cd ${srcdir}/${pkgname%%-git}
+  cd ${srcdir}/${pkgname}-${pkgver}
 #  export PYTHON="$(which python2)"
   make DESTDIR="$pkgdir" install
 
@@ -182,18 +188,22 @@ package() {
   install -m 0755 ../qemu-kvm.sh "$pkgdir/usr/bin/qemu-kvm"
 
   # Install the lvm rules
-  install -Dm 0644 lib/vdsm/storage/vdsm-lvm.rules \
+  install -Dm 0644 vdsm/storage/vdsm-lvm.rules \
                      ${pkgdir}/usr/lib/udev/rules.d/12-vdsm-lvm.rules
   #systemd
   install -Dm 0644 init/systemd/85-vdsmd.preset ${pkgdir}/${_systemddir}/system-preset/85-vdsmd.preset
-
+  install -Dm 0755 init/systemd/systemd-vdsmd ${pkgdir}/${_systemddir}/systemd-vdsmd
   install -Dm 0644 init/systemd/vdsm-tmpfiles.d.conf \
                      ${pkgdir}/usr/lib/tmpfiles.d/vdsm.conf
   install -Dm 0644 init/systemd/unlimited-core.conf \
                      ${pkgdir}/etc/systemd/system/libvirtd.service.d/unlimited-core.conf
   install -Dm 0644 vdsm_hooks/fcoe/85-vdsm-hook-fcoe.preset ${pkgdir}/${_systemddir}/system-preset/
+
+  # Install the polkit for libvirt
+  install -Dm 0644 vdsm/vdsm-libvirt-access.rules \
+                     ${pkgdir}/usr/share/polkit-1/rules.d/10-vdsm-libvirt-access.rules
 # Install the libvirt hook for cleaning up the XML
-  install -Dm 0755 lib/vdsm/virt/libvirt-hook.sh \
+  install -Dm 0755 vdsm/virt/libvirt-hook.sh \
                    ${pkgdir}/etc/libvirt/hooks/qemu
   mv ${pkgdir}/var/run ${pkgdir}/run
 }

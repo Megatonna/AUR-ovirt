@@ -1,0 +1,8 @@
+--- vdsm/storage/Makefile.am	2017-07-20 15:43:17.551088396 +0300
++++ vdsm/storage/Makefile.am	2017-07-20 15:43:28.694422324 +0300
+@@ -61,4 +61,4 @@
+ all: vdsm-lvm.rules
+ 
+ vdsm-lvm.rules: vdsm_lvm_rules.template
+-	python $< > $@
++	python2 $< > $@
