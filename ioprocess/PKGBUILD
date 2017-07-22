@@ -1,41 +1,41 @@
 # Contributor: Andrii Sokolenko
 # Based by Ovirt ioprocess.spec
-pkgbase=(ioprocess-git)
-pkgname=(python2-ioprocess)
-pkgver=0.17.gite82786d
+pkgname=ioprocess
+pkgver=0.17.git19e4dc
 pkgrel=1
 pkgdesc="Slave process to perform risky IO"
-arch=('i686' 'x86_64')
+arch=('any')
 url="https://github.com/oVirt/ioprocess"
 license=('GPLv2+')
 groups=()
 conflicts=()
 replaces=()
 backup=()
+makedepends=('yajl')
 depends=('yajl' 'python2')
 checkdepends=('python-tox')
-provides=()
+provides=('python2-ioprocess')
 #options=(!emptydirs)
 install=()
-source=('git+https://gerrit.ovirt.org/p/ioprocess.git')
+source=('git+https://gerrit.ovirt.org/p/ioprocess.git#commit=19e4dc91a47e897918c152fcc02466eeac2daba2')
 sha256sums=('SKIP')
 prepare() {
-    cd ${srcdir}/${pkgbase%%-git}/bindings/python
+    cd ${srcdir}/${pkgname}/bindings/python
     sed -i'' -e 's/python3.5/python3/g' tox.ini
 }
 check() {
-    cd ${srcdir}/${pkgbase%%-git}/bindings/python
+    cd ${srcdir}/${pkgname}/bindings/python
     LC_CTYPE=en_US.UTF-8 tox
 }
 build() {
-  cd ${srcdir}/${pkgbase%%-git}
+  cd ${srcdir}/${pkgname}
   export PYTHON=$(which python2) 
   ./autogen.sh
   ./configure --prefix=/usr --libexec=/usr/lib/ioprocess/ --sbindir=/usr/bin --sysconfdir=/etc --localstatedir=/var
   make
 }
 
-package_python2-ioprocess() {
+package() {
   cd ${srcdir}/${pkgbase%%-git}
   make DESTDIR=${pkgdir} install
 }

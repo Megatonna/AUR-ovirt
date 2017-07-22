@@ -1,7 +1,7 @@
 # Contributor: Andrii Sokolenko
 # Based on fedora sos.spec
-pkgname=(sos-git)
-pkgver=3.4.git4df4897
+pkgname=(sos)
+pkgver=3.4.gitde9864
 pkgrel=1
 pkgdesc="A set of tools to gather troubleshooting information from a system"
 arch=('i686' 'x86_64')
@@ -11,29 +11,38 @@ groups=()
 conflicts=()
 replaces=()
 backup=()
-depends=('python3' 'python-lxml' 'python-six' 'xz' 'bzip2' 'gettext')
+depends=('python' 'python-lxml' 'python-six' 'xz' 'bzip2' 'gettext' 'python-sphinx')
 checkdepends=('python-nose')
-provides=('python3-sos' 'sos' 'sosreport' 'python3-sosreport')
-options=(!emptydirs)
+provides=('python-sos' 'sos' 'sosreport' 'python-sosreport')
+#options=(!emptydirs)
 install=()
-source=('git+https://github.com/sosreport/sos.git')
+source=("git+https://github.com/sosreport/sos.git#commit=de9864a01cdd6ef9f27305990a34e9ca5b7baa5b")
 sha256sums=('SKIP')
-
+prepare() {
+  cd ${srcdir}/${pkgname}
+#  grep -Rle "sphinx-build" * | xargs -r sed -i'' -e 's/\bsphinx-build\b/sphinx-build2/g'
+#  grep -Rle "PYTHON=python" * | xargs -r sed -i'' -e 's/\bPYTHON=python\b/PYTHON=python2/g'
+#  grep -Rle "#\!/usr/bin/python" * | xargs -r sed -i'' -e 's/#!\/usr\/bin\/\bpython\b/\#!\/usr\/bin\/python2/g'
+}
 check() {
-  cd ${srcdir}/${pkgname%%-git}
+  cd ${srcdir}/${pkgname}
   make test
 }
 build() {
-  cd ${srcdir}/${pkgname%%-git}
+  cd ${srcdir}/${pkgname}
   # BZ1427445
-  sed 's/@SOSVERSION@/%{version}/g' sos/__init__.py.in > sos/__init__.py
+#  sed 's/@SOSVERSION@/%{version}/g' sos/__init__.py.in > sos/__init__.py
 #  python3 setup.py build
+  export PYTHON=$(which python)
+  export SPHINXBUILD=$(which sphinx-build)
   make
 }
 
 package() {
-  cd ${srcdir}/${pkgname%%-git}
-#  python3 setup.py install --root=${pkgdir} --prefix=/usr --install-scripts=/usr/bin
+  cd ${srcdir}/${pkgname}
+  #  python3 setup.py install --root=${pkgdir} --prefix=/usr --install-scripts=/usr/bin
+  export PYTHON=$(which python)
+  export SPHINXBUILD=$(which sphinx-build)
   make DESTDIR=${pkgdir} install
   install -Dm644 sos.conf ${pkgdir}/etc/sos.conf
   mv ${pkgdir}/usr/sbin ${pkgdir}/usr/bin
