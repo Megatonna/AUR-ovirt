@@ -18,7 +18,7 @@ sha256sums=('SKIP' 'SKIP')
 makedepends=('python2')
 depends=('python2')
 checkdepends=('python2-tox')
-
+provides=('python2-pthreading')
 prepare() {
   patch -Np0 -i ../0001-pthreading.patch -d ${pkgname}
 }

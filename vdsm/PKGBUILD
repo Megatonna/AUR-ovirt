@@ -22,21 +22,22 @@ makedepends=('openssl' \
 depends=('python2' \
          'systemd' \
          'dmidecode' \
+         'openssl' \
          'x86_energy_perf_policy' # modprobe msr,cpuid? \
          'python2-dmidecode' \
          'libguestfs' \
          'polkit' \
-         'chrony' \
-         'dhclient' \
          'python2-dbus' \
-         'ethtool' \
          'which' \
          'sudo>=1.7.3' \
          'logrotate' \
          'lshw' \
          'xz' \
          'iproute2>=3.10.0' \
+         'bridge-utils' \
          'python2-yaml' \
+         'dhclient' \
+         'networkmanager' \
          'python2-nose' \
          'python2-ipaddress' \
          'python2-dateutil' \
@@ -51,26 +52,24 @@ depends=('python2' \
          'curl' \
          'safelease>=1.0' \
          'mom>=0.5.8' \
-         'openvswitch>=2.0.0' \
          'libvirt' \
-         'open-iscsi' \
          'sanlock>=3.4.0' \
          'python2-sanlock' \
-         'multipath-tools' \
          'e2fsprogs>=1.41.14' \
          'sed>=4.2.1' \
          'ed' \
          'lvm2>=2.02.132' \
-         'qemu' \
+         'open-iscsi' \
+         'qemu-headless' \
          'psmisc>=22.6' \
-         'bridge-utils' \
          'tree' \
          'dosfstools' \
          'cdrtools' \
          'python2-decorator' \
          'libsasl' \
-         'inetutils' \
          'usbutils' \
+         'inetutils' \
+         'ethtool' \
          'python2-magic' \
          'xfsprogs' \
          'libselinux')
@@ -80,6 +79,10 @@ provides=('vdsm' 'vdsm-cli' 'vdsm-xmlrpm' 'vdsm-api' 'vdsm-jsonrpc' 'vdsm-yajson
           'vdsm-python' 'vdsm-tests' 'vdsm-hook-allocate_net' 'vdsm-hook-checkimages' \
           'vdsm-hook-checkips' 'vdsm-hook-diskunmap' 'vdsm-hook-ethtool-options')
 
+        # 'multipath-tools' \
+        # 'chrony' \
+        # 'open-iscsi' \
+        # 'openvswitch>=2.0.0' \
         # 'fence-agents' \
         # 'ovirt-imageio-common' \
         # 'ovirt-imageio-daemon' \
@@ -118,9 +121,9 @@ backup=()
 #options=(!emptydirs)
 install=$pkgname.install
 source=("https://github.com/oVirt/vdsm/archive/v${pkgver}.tar.gz"
- '0001-libexec.patch' '0002-Makefile.patch' 'vdsm-logrotate.timer' 'vdsm-logrotate.service' '0003-logrotate.patch'
+ '0001-libexec.patch' '0002-Makefile.patch' 'vdsm-logrotate.timer' 'vdsm-logrotate.service' '0003-logrotate.patch' '0004-network-scripts.patch'
  'qemu-kvm.sh')
-sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP'
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP'
 '1303e42d789b45776ad4d3afa5f8ae8b8e3afc2c0c9e0d8a861b200cf4a3c012')
 _systemddir=/usr/lib/systemd
 
@@ -135,6 +138,7 @@ prepare() {
   patch -Np0 -i ../0001-libexec.patch
   patch -Np0 -i ../0002-Makefile.patch
   patch -Np0 -i ../0003-logrotate.patch
+  patch -Np0 -i ../0004-network-scripts.patch
 }
 build() {
   cd ${srcdir}/${pkgname}-${pkgver}
@@ -207,6 +211,7 @@ package() {
 # Install the libvirt hook for cleaning up the XML
   install -Dm 0755 vdsm/virt/libvirt-hook.sh \
                    ${pkgdir}/etc/libvirt/hooks/qemu
+  chmod 0644 ${pkgdir}/etc/pki/vdsm/keys/libvirt_password
   mv ${pkgdir}/etc/cron.hourly/vdsm-logrotate ${pkgdir}/usr/lib/vdsm/
   mv ${pkgdir}/var/run ${pkgdir}/run
   rm -rf ${pkgdir}/etc/cron*

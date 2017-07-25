@@ -1,0 +1,81 @@
+--- lib/vdsm/network/configurators/ifcfg_acquire.py	2017-07-25 16:12:09.544368250 +0300
++++ lib/vdsm/network/configurators/ifcfg_acquire.py	2017-07-25 16:14:39.947709647 +0300
+@@ -27,7 +27,7 @@
+ from vdsm.network.nm.errors import NMDeviceNotFoundError
+ 
+ 
+-NET_CONF_DIR = '/etc/sysconfig/network-scripts/'
++NET_CONF_DIR = '/etc/netctl/'
+ NET_CONF_PREF = NET_CONF_DIR + 'ifcfg-'
+ 
+ 
+--- lib/vdsm/network/configurators/ifcfg.py.orig	2017-07-25 16:13:57.731040714 +0300
++++ lib/vdsm/network/configurators/ifcfg.py	2017-07-25 16:14:14.621041620 +0300
+@@ -62,7 +62,7 @@
+ from ..models import Nic, Bridge, Bond as bond_model
+ from ..sourceroute import StaticSourceRoute
+ 
+-NET_CONF_DIR = '/etc/sysconfig/network-scripts/'
++NET_CONF_DIR = '/etc/netctl/'
+ NET_CONF_BACK_DIR = constants.P_VDSM_LIB + 'netconfback/'
+ NET_CONF_PREF = NET_CONF_DIR + 'ifcfg-'
+ 
+--- lib/vdsm/network/netinfo/misc.py.orig	2017-07-25 16:14:59.201044012 +0300
++++ lib/vdsm/network/netinfo/misc.py	2017-07-25 16:15:15.261044877 +0300
+@@ -29,7 +29,7 @@
+     ('IPADDR0', 'GATEWAY0', 'PREFIX0', 'NETMASK0'))
+ # TODO: once the unification of vdsm under site-packges is done, this duplicate
+ # TODO: of ifcfg.NET_CONF_DIR and ifcfg.NET_CONF_PREF can be removed
+-NET_CONF_DIR = '/etc/sysconfig/network-scripts/'
++NET_CONF_DIR = '/etc/netctl'
+ NET_CONF_PREF = NET_CONF_DIR + 'ifcfg-'
+ 
+ 
+--- contrib/shell_helper.orig	2017-07-25 16:24:04.521073285 +0300
++++ contrib/shell_helper	2017-07-25 16:23:02.564403291 +0300
+@@ -111,7 +111,7 @@
+         dummy=${dummy%@NONE}
+         sudo ip link del dev $dummy
+     done
+-    sudo rm /etc/sysconfig/network-scripts/ifcfg-dummy*
++    sudo rm /etc/netctl/ifcfg-dummy*
+ }
+ 
+ del_veths() {
+@@ -120,7 +120,7 @@
+         veth=${veth%@veth*}
+         sudo ip link del dev $veth
+     done
+-    sudo rm /etc/sysconfig/network-scripts/ifcfg-veth*
++    sudo rm /etc/netctl/ifcfg-veth*
+ }
+ 
+ del_bonds() {
+@@ -129,14 +129,14 @@
+         bond=${bond%@NONE}
+         echo "-$bond" | sudo tee /sys/class/net/bonding_masters
+     done
+-    sudo rm /etc/sysconfig/network-scripts/ifcfg-bond*
++    sudo rm /etc/netctl/ifcfg-bond*
+ }
+ 
+ del_bridges() {
+     for bridge in `brctl show | awk '{print $1;}' | grep test-network`; do
+         sudo ip link set dev $bridge down
+         sudo brctl delbr $bridge
+-        sudo rm /etc/sysconfig/network-scripts/ifcfg-$bridge
++        sudo rm /etc/netctl/ifcfg-$bridge
+     done
+ }
+ 
+@@ -180,8 +180,8 @@
+         print 'removing %s' % full_path
+         os.remove(full_path)
+ 
+-d = '/etc/sysconfig/network-scripts/'
+-for f in os.listdir('/etc/sysconfig/network-scripts/'):
++d = '/etc/netctl/'
++for f in os.listdir('/etc/netctl/'):
+     if (f.startswith('ifcfg-bond') or
+         f.startswith('ifcfg-test-network')):
+         full_path = os.path.join(d, f)
