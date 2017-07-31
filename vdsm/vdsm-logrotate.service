@@ -4,4 +4,3 @@ Description=vdsm hourly logrotate
 [Service]
 Type=oneshot
 ExecStart=/usr/lib/vdsm/vdsm-logrotate
-User=vdsm

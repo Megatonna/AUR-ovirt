@@ -32,7 +32,6 @@ post_install() {
 	chown -R vdsm:kvm /var/lib/libvirt
 	chown -R vdsm:kvm /ovirt/
 	chown root:root /var/log/vdsm/supervdsm.log
-	echo 'export OTOPI_PYTHON="/usr/bin/python2"' > /etc/otopi.env.d/python.env
 	systemd-tmpfiles --create vdsm.conf
 	/bin/systemctl restart systemd-modules-load.service >/dev/null 2>&1 || :
 	/bin/systemctl preset vdsmd.service supervdsmd.service vdsm-network.service vdsm-network-init.service mom-vdsm.service ksmtuned.service > /dev/null 2>&1 || :

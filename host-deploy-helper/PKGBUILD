@@ -1,0 +1,53 @@
+# Contributor: Andrii Sokolenko
+pkgname=host-deploy-helper
+pkgver=0.0.1
+pkgrel=1
+pkgdesc="Several hacks for supports ovirt-engine host install process."
+arch=('any')
+url=""
+license=('MIT')
+groups=()
+#libguestfs - virt-v2v
+depends=('vdsm' \
+         'x86_energy_perf_policy') # modprobe msr,cpuid?
+optdepends=('fence-agents: Support Ovirt Power Management' \
+            'tuned: Host perfomance optimization')
+provides=()
+conflicts=()
+replaces=()
+backup=()
+#options=(!emptydirs)
+#install=$pkgname.install
+#source=('')
+#sha256sums=('')
+
+package() {
+  install -dDm 0755 ${pkgdir}/etc/otopi.env.d
+  install -dDm 0755 ${pkgdir}/etc/ovirt-host-deploy.conf.d
+  install -dDm 0755 ${pkgdir}/etc/modules-load.d/
+  install -dDm 0755 ${pkgdir}/var/lib/vdsm/staging/netconf/nets
+  install -dDm 0755 ${pkgdir}/usr/bin
+  echo 'export OTOPI_PYTHON="/usr/bin/python2"' > ${pkgdir}/etc/otopi.env.d/python.env
+  echo "[environment:init]
+ODEPLOY/offlinePackager=bool:True
+PACKAGER/yumpackagerEnabled=bool:False" > ${pkgdir}/etc/ovirt-host-deploy.conf.d/50-offline-packager.conf
+  echo "cpuid" > ${pkgdir}/etc/modules-load.d/cpuid.conf
+  echo '{
+"ipv6autoconf": true, 
+"mtu": 1500, 
+"switch": "legacy", 
+"dhcpv6": false, 
+"stp": false, 
+"bridged": true, 
+"defaultRoute": true, 
+"bootproto": "dhcp"
+}' > ${pkgdir}/var/lib/vdsm/staging/netconf/nets/ovirtmgmt
+  echo '#!/bin/bash
+echo "ifup" $@' > ${pkgdir}/usr/bin/ifup
+chmod +x ${pkgdir}/usr/bin/ifup
+echo '#!/bin/bash
+echo "ifdown" $@' > ${pkgdir}/usr/bin/ifdown
+chmod +x ${pkgdir}/usr/bin/ifdown
+}
+
+# vim:set ts=2 sw=2 et:
