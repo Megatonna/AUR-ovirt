@@ -1,18 +1,5 @@
---- lib/vdsm/network/configurators/ifcfg.py	2017-07-12 02:10:24.605127293 +0300
-+++ lib/vdsm/network/configurators/ifcfg.py	2017-07-12 02:11:19.245130225 +0300
-@@ -456,8 +456,8 @@
-     @classmethod
-     def _persistentBackup(cls, filename):
-         """ Persistently backup ifcfg-* config files """
--        if os.path.exists('/usr/libexec/ovirt-functions'):
--            cmd.exec_sync([constants.EXT_SH, '/usr/libexec/ovirt-functions',
-+        if os.path.exists('/usr/lib/ovirt-functions'):
-+            cmd.exec_sync([constants.EXT_SH, '/usr/lib/ovirt-functions',
-                            'unmount_config', filename])
-             logging.debug("unmounted %s using ovirt", filename)
- 
---- vdsm/virt/libvirt-hook.sh	2017-07-12 02:14:51.508474951 +0300
-+++ vdsm/virt/libvirt-hook.sh	2017-07-12 02:15:09.208475903 +0300
+--- static/etc/libvirt/hooks/qemu	2017-07-12 02:14:51.508474951 +0300
++++ static/etc/libvirt/hooks/qemu	2017-07-12 02:15:09.208475903 +0300
 @@ -17,5 +17,5 @@
  
  # Fix VMs migrating to host with libvirt >= 1.2.8

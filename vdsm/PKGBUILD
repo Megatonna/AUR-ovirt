@@ -61,6 +61,7 @@ depends=('python2' \
          'lvm2>=2.02.132' \
          'open-iscsi' \
          'qemu-headless' \
+         'docker' \
          'psmisc>=22.6' \
          'tree' \
          'dosfstools' \
@@ -120,7 +121,7 @@ replaces=()
 backup=()
 #options=(!emptydirs)
 install=$pkgname.install
-source=("https://github.com/oVirt/vdsm/archive/v${pkgver}.tar.gz"
+source=("git+https://github.com/oVirt/vdsm.git#commit=e07fea30d45d34292fd803ecf426b27827015502"
  '0001-libexec.patch' '0002-Makefile.patch' 'vdsm-logrotate.timer' 'vdsm-logrotate.service' '0003-logrotate.patch' '0004-network-scripts.patch'
  'qemu-kvm.sh')
 sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP'
@@ -128,7 +129,7 @@ sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP'
 _systemddir=/usr/lib/systemd
 
 prepare() {
-  cd ${srcdir}/${pkgname}-${pkgver}
+  cd ${srcdir}/${pkgname}
   echo v${pkgver} > VERSION
   grep -Rle "#\!/usr/bin/python" * | xargs -r sed -i'' -e 's/#!\/usr\/bin\/\bpython\b/\#!\/usr\/bin\/python2/g'
   sed -i'' -e 's/python-config/python2-config/g' -e 's|/libexec/|/lib/|g' configure.ac
@@ -141,7 +142,7 @@ prepare() {
   patch -Np0 -i ../0004-network-scripts.patch
 }
 build() {
-  cd ${srcdir}/${pkgname}-${pkgver}
+  cd ${srcdir}/${pkgname}
   export PYTHON="$(which python2)"
   autoreconf -if 
   ./configure --prefix=/usr --libexec=/usr/lib --sysconfdir=/etc --sbindir=/usr/bin --localstatedir=/var \
@@ -157,7 +158,7 @@ build() {
     --disable-ovirt-imageio \
     --disable-ovirt-vmconsole \
     --disable-vhostmd \
-    --disable-containers \
+    --enable-containers \
     --disable-libvirt-selinux \
     --disable-libvirt-sanlock \
     --disable-gluster-mgmt \
@@ -170,19 +171,18 @@ build() {
   _rawversion=$pkgver-$pkgrel
   _site_dir=`$PYTHON -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
   sed -i -e 's/^software_version =.*/software_version = "'"${_baseversion}"'"/' \
-           -e 's/^raw_version_revision =.*/raw_version_revision = "'"${_rawversion}"'"/' \
-                  -e 's/^software_revision =.*/software_revision = "'"${_baserelease}"'"/' lib/vdsm/dsaversion.py
-  sed -i -e 's|@VDSMRPCPYLIBDIR@|'"${_site_dir}/vdsm/rpc"'|g' lib/vdsm/constants.py
+    -e 's/^raw_version_revision =.*/raw_version_revision = "'"${_rawversion}"'"/' \
+    -e 's/^software_revision =.*/software_revision = "'"${_baserelease}"'"/' lib/vdsm/dsaversion.py
 }
 
 check() {
-  cd ${srcdir}/${pkgname}-${pkgver}
+  cd ${srcdir}/${pkgname}
 #  export PYTHON="$(which python2)"
 #  make check
 }
 
 package() {
-  cd ${srcdir}/${pkgname}-${pkgver}
+  cd ${srcdir}/${pkgname}
 #  export PYTHON="$(which python2)"
   make DESTDIR="$pkgdir" install
 
@@ -191,11 +191,10 @@ package() {
   install -m 0755 ../qemu-kvm.sh "$pkgdir/usr/bin/qemu-kvm"
 
   # Install the lvm rules
-  install -Dm 0644 vdsm/storage/vdsm-lvm.rules \
+  install -Dm 0644 lib/vdsm/storage/vdsm-lvm.rules \
                      ${pkgdir}/usr/lib/udev/rules.d/12-vdsm-lvm.rules
   #systemd
   install -Dm 0644 init/systemd/85-vdsmd.preset ${pkgdir}/${_systemddir}/system-preset/85-vdsmd.preset
-  install -Dm 0755 init/systemd/systemd-vdsmd ${pkgdir}/${_systemddir}/systemd-vdsmd
   install -Dm 0644 ../vdsm-logrotate.timer ${pkgdir}/${_systemddir}/system/vdsm-logrotate.timer
   install -Dm 0644 ../vdsm-logrotate.service ${pkgdir}/${_systemddir}/system/vdsm-logrotate.service
   
@@ -205,12 +204,6 @@ package() {
                      ${pkgdir}/etc/systemd/system/libvirtd.service.d/unlimited-core.conf
   install -Dm 0644 vdsm_hooks/fcoe/85-vdsm-hook-fcoe.preset ${pkgdir}/${_systemddir}/system-preset/
 
-  # Install the polkit for libvirt
-  install -Dm 0644 vdsm/vdsm-libvirt-access.rules \
-                     ${pkgdir}/usr/share/polkit-1/rules.d/10-vdsm-libvirt-access.rules
-# Install the libvirt hook for cleaning up the XML
-  install -Dm 0755 vdsm/virt/libvirt-hook.sh \
-                   ${pkgdir}/etc/libvirt/hooks/qemu
   chmod 0644 ${pkgdir}/etc/pki/vdsm/keys/libvirt_password
   mv ${pkgdir}/etc/cron.hourly/vdsm-logrotate ${pkgdir}/usr/lib/vdsm/
   mv ${pkgdir}/var/run ${pkgdir}/run
